@@ -2,6 +2,7 @@ port module Config.API exposing (main)
 
 import Json.Decode exposing (Decoder, andThen, fail, int, map, string, succeed)
 import Json.Decode.Pipeline exposing (required)
+import Json.Encode as Encode
 import Serverless
 import Serverless.Conn exposing (config, respond, textBody)
 
@@ -41,7 +42,7 @@ main =
 
 configToString : Config -> String
 configToString config =
-    "blah"
+    Encode.encode 0 (configEncoder config)
 
 
 type alias Config =
@@ -77,12 +78,35 @@ configDecoder =
         |> required "someService" serviceDecoder
 
 
+authEncoder : Auth -> Encode.Value
+authEncoder auth =
+    [ ( "secret", Encode.string auth.secret ) ]
+        |> Encode.object
+
+
+configEncoder : Config -> Encode.Value
+configEncoder config =
+    [ ( "auth", authEncoder config.auth )
+    , ( "someService", serviceEncoder config.someService )
+    ]
+        |> Encode.object
+
+
 serviceDecoder : Decoder Service
 serviceDecoder =
     succeed Service
         |> required "protocol" protocolDecoder
         |> required "host" string
         |> required "port" (string |> andThen (String.toInt >> maybeToDecoder))
+
+
+serviceEncoder : Service -> Encode.Value
+serviceEncoder service =
+    [ ( "protocol", protocolEncoder service.protocol )
+    , ( "host", Encode.string service.host )
+    , ( "port", Encode.int service.port_ )
+    ]
+        |> Encode.object
 
 
 protocolDecoder : Decoder Protocol
@@ -100,6 +124,16 @@ protocolDecoder =
                     fail ""
         )
         string
+
+
+protocolEncoder : Protocol -> Encode.Value
+protocolEncoder protocol =
+    case protocol of
+        Http ->
+            Encode.string "http"
+
+        Https ->
+            Encode.string "https"
 
 
 maybeToDecoder : Maybe a -> Decoder a
