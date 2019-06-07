@@ -36,7 +36,7 @@ const config = rc('demoConfig', {
 });
 
 module.exports.handler = elmServerless.httpApi({
-  handler: Elm.Config.API.init(),
+  handler: Elm.Config.API,
 
   // Config is a record type that you define.
   // You will also provide a JSON decoder for this.
