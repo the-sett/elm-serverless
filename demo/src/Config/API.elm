@@ -1,7 +1,7 @@
-port module Config.API exposing (Auth, Config, Protocol(..), Service, configDecoder, main, protocolDecoder, requestPort, responsePort, resultToDecoder, serviceDecoder)
+port module Config.API exposing (main)
 
 import Json.Decode exposing (Decoder, andThen, fail, int, map, string, succeed)
-import Json.Decode.Pipeline exposing (decode, required)
+import Json.Decode.Pipeline exposing (required)
 import Serverless
 import Serverless.Conn exposing (config, respond, textBody)
 
@@ -29,7 +29,7 @@ main =
             \conn ->
                 respond
                     ( 200
-                    , textBody <| (++) "Config: " <| toString (config conn)
+                    , textBody <| (++) "Config: " <| configToString (config conn)
                     )
                     conn
         }
@@ -37,6 +37,11 @@ main =
 
 
 -- CONFIG TYPES
+
+
+configToString : Config -> String
+configToString config =
+    "blah"
 
 
 type alias Config =
@@ -67,17 +72,17 @@ type Protocol
 
 configDecoder : Decoder Config
 configDecoder =
-    decode Config
-        |> required "auth" (decode Auth |> required "secret" string)
+    succeed Config
+        |> required "auth" (succeed Auth |> required "secret" string)
         |> required "someService" serviceDecoder
 
 
 serviceDecoder : Decoder Service
 serviceDecoder =
-    decode Service
+    succeed Service
         |> required "protocol" protocolDecoder
         |> required "host" string
-        |> required "port" (string |> andThen (String.toInt >> resultToDecoder))
+        |> required "port" (string |> andThen (String.toInt >> maybeToDecoder))
 
 
 protocolDecoder : Decoder Protocol
@@ -97,14 +102,14 @@ protocolDecoder =
         string
 
 
-resultToDecoder : Result err a -> Decoder a
-resultToDecoder result =
-    case result of
-        Ok val ->
+maybeToDecoder : Maybe a -> Decoder a
+maybeToDecoder maybe =
+    case maybe of
+        Just val ->
             succeed val
 
-        Err err ->
-            fail (toString err)
+        Nothing ->
+            fail "nothing"
 
 
 port requestPort : Serverless.RequestPort msg
