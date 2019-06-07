@@ -13,13 +13,13 @@ custom:
     dontPrintOutput: true
 
 functions:
-  hello:
-    handler: src/Hello/api.handler # Refers to function `handler` exported from `Hello/api.js`
-    events:
-      - http:
-          integration: lambda-proxy
-          path: /
-          method: ANY
+  # hello:
+  #   handler: src/Hello/api.handler # Refers to function `handler` exported from `Hello/api.js`
+  #   events:
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /
+  #         method: ANY
 
   config:
     handler: src/Config/api.handler
@@ -29,66 +29,66 @@ functions:
           path: /config
           method: ANY
 
-  forms:
-    handler: src/Forms/api.handler
-    events:
-      - http:
-          integration: lambda-proxy
-          path: /forms
-          method: ANY
-
-  interop:
-    handler: src/Interop/api.handler
-    events:
-      - http:
-          integration: lambda-proxy
-          path: /interop
-          method: ANY
-      - http:
-          integration: lambda-proxy
-          path: /interop/{proxy+}
-          method: ANY
-
-  routing:
-    handler: src/Routing/api.handler
-    events:
-      - http:
-          integration: lambda-proxy
-          path: /routing
-          method: ANY
-      - http:
-          integration: lambda-proxy
-          path: /routing/{proxy+} # Lambda Proxy Integration
-          method: ANY
-
-  pipelines:
-    handler: src/Pipelines/api.handler
-    events:
-      - http:
-          integration: lambda-proxy
-          path: /pipelines
-          method: ANY
-
-  sideEffects:
-    handler: src/SideEffects/api.handler
-    events:
-      - http:
-          integration: lambda-proxy
-          path: /side-effects
-          method: ANY
-      - http:
-          integration: lambda-proxy
-          path: /side-effects/{proxy+}
-          method: ANY
-
-  quoted:
-    handler: src/Quoted/api.handler
-    events:
-      - http:
-          integration: lambda-proxy
-          path: /quoted
-          method: ANY
-      - http:
-          integration: lambda-proxy
-          path: /quoted/{proxy+}
-          method: ANY
+  # forms:
+  #   handler: src/Forms/api.handler
+  #   events:
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /forms
+  #         method: ANY
+  #
+  # interop:
+  #   handler: src/Interop/api.handler
+  #   events:
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /interop
+  #         method: ANY
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /interop/{proxy+}
+  #         method: ANY
+  #
+  # routing:
+  #   handler: src/Routing/api.handler
+  #   events:
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /routing
+  #         method: ANY
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /routing/{proxy+} # Lambda Proxy Integration
+  #         method: ANY
+  #
+  # pipelines:
+  #   handler: src/Pipelines/api.handler
+  #   events:
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /pipelines
+  #         method: ANY
+  #
+  # sideEffects:
+  #   handler: src/SideEffects/api.handler
+  #   events:
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /side-effects
+  #         method: ANY
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /side-effects/{proxy+}
+  #         method: ANY
+  #
+  # quoted:
+  #   handler: src/Quoted/api.handler
+  #   events:
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /quoted
+  #         method: ANY
+  #     - http:
+  #         integration: lambda-proxy
+  #         path: /quoted/{proxy+}
+  #         method: ANY
