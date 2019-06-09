@@ -7,7 +7,7 @@ import Serverless.Conn.Body as Body exposing (appendText)
 import Serverless.Conn.Request as Request exposing (Request)
 import Serverless.Conn.Response as Response exposing (Response, updateBody)
 import Serverless.Plug as Plug exposing (pipeline, plug)
-import UrlParser exposing ((</>), Parser, map, oneOf, s, string, top)
+import Url.Parser exposing ((</>), Parser, map, oneOf, s, string, top)
 
 
 appendToBody : String -> Conn -> Conn
