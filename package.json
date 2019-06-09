@@ -18,7 +18,7 @@
     "start": "cd demo && serverless offline",
     "test": "npm run test:js && npm run test:elm",
     "test:js": "istanbul cover --root src-bridge --include-all-sources --dir ./.coverage node_modules/mocha/bin/_mocha -- test/demo test/bridge",
-    "test:elm": "elm-doc-test && elm test",
+    "test:elm": "elm-doc-test && elm-test",
     "test:watch": "elm test --watch & node scripts/test-server && mocha --reporter=dot --watch test/bridge test/demo"
   },
   "dependencies": {
