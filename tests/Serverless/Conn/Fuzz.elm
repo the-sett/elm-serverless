@@ -6,7 +6,7 @@ module Serverless.Conn.Fuzz exposing
     , status
     )
 
-import Fuzz exposing (Fuzzer, andMap, andThen, constant, map)
+import Fuzz exposing (Fuzzer, andMap, constant, map)
 import Fuzz.Extra exposing (eitherOr)
 import Serverless.Conn exposing (Id)
 import Serverless.Conn.Body as Body exposing (Body)
