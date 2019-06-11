@@ -14,6 +14,7 @@ all =
     describe "Serverless.Conn.Decode"
         [ describeDecoder "KeyValueList.decoder"
             KeyValueList.decoder
+            Debug.toString
             [ ( "null", DecodesTo [] )
             , ( "{}", DecodesTo [] )
             , ( """{ "fOo": "baR " }""", DecodesTo [ ( "fOo", "baR " ) ] )
