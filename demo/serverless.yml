@@ -13,13 +13,13 @@ custom:
     dontPrintOutput: true
 
 functions:
-  # hello:
-  #   handler: src/Hello/api.handler # Refers to function `handler` exported from `Hello/api.js`
-  #   events:
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /
-  #         method: ANY
+  hello:
+    handler: src/Hello/api.handler # Refers to function `handler` exported from `Hello/api.js`
+    events:
+      - http:
+          integration: lambda-proxy
+          path: /
+          method: ANY
 
   config:
     handler: src/Config/api.handler
