@@ -18,7 +18,7 @@
     "start": "cd demo && serverless offline",
     "test": "npm run test:js && npm run test:elm",
     "test:js": "istanbul cover --root src-bridge --include-all-sources --dir ./.coverage node_modules/mocha/bin/_mocha -- test/demo test/bridge",
-    "test:elm": "elm-doc-test && elm-test",
+    "test:elm": "elm-verify-examples && elm-test",
     "test:watch": "elm test --watch & node scripts/test-server && mocha --reporter=dot --watch test/bridge test/demo"
   },
   "dependencies": {
@@ -33,7 +33,7 @@
     "co": "^4.6.0",
     "cross-env": "^3.1.4",
     "elm": "^0.19.0",
-    "elm-doc-test": "^4.0.0",
+    "elm-verify-examples": "^3.1.0",
     "elm-test": "^0.19.0-rev6",
     "elm-webpack-loader": "^5.0.0",
     "eslint": "^3.19.0",
