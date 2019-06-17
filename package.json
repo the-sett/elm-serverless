@@ -13,10 +13,10 @@
     "clobber": "rm -rf elm-stuff demo/elm-stuff demo/.webpack tests/elm-stuff tests/Doc",
     "rebuild": "npm run clobber && npm install && npm test",
     "deploy:demo": "cd demo && cross-env NODE_ENV=production serverless deploy",
-    "posttest": "eslint .",
+    "posttest": "node scripts/stop-test-server",
     "pretest": "node scripts/test-server",
     "start": "cd demo && serverless offline",
-    "test": "npm run test:js && npm run test:elm",
+    "test": "npm run test:js && npm run test:elm && eslint . || true",
     "test:js": "istanbul cover --root src-bridge --include-all-sources --dir ./.coverage node_modules/mocha/bin/_mocha -- test/demo test/bridge",
     "test:elm": "elm-verify-examples && elm-test",
     "test:watch": "elm test --watch & node scripts/test-server && mocha --reporter=dot --watch test/bridge test/demo"
