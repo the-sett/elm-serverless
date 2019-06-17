@@ -32,7 +32,7 @@ const httpApi = ({
     invalid: `Invalid handler argument.${handlerExample}Got`,
   });
 
-  const app = handler.init({ flags : config });
+  const app = handler.init({ flags: config });
 
   if (typeof app !== 'object') {
     invalidElmApp(`Got: ${validate.inspect(app)}`);

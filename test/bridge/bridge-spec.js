@@ -30,7 +30,7 @@ describe('elmServerless', () => {
       const h = makeHandler();
       const config = { some: { app: ['specific', 'configuration'] } };
       httpApi({ handler: h, config, requestPort, responsePort });
-      h.init.calledWith({ flags : config }).should.be.true();
+      h.init.calledWith({ flags: config }).should.be.true();
     });
 
     it('subscribes to the responsePort', () => {
