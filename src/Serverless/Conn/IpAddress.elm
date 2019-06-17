@@ -72,7 +72,7 @@ decoder =
                             |> List.map toNonNegativeInt
                 in
                 case list of
-                    (Just a) :: (Just b) :: (Just c) :: (Just d) :: _ ->
+                    (Just a) :: (Just b) :: (Just c) :: (Just d) :: [] ->
                         Decode.succeed (Ip4 a b c d)
 
                     _ ->
