@@ -64,8 +64,10 @@ findServer().then(server => {
     logger.info(`Stopping old test server (${server.pid})`);
     process.kill(server.pid);
   }
+  logger.info(`Starting new test server`);
   startServer();
 }).catch(err => {
+  logger.info(`Error on restart test server`);
   logger.error(err);
   process.exit(1);
 });
