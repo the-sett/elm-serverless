@@ -22,6 +22,7 @@ all =
             ]
         , describeDecoder "body for plain text"
             (Body.decoder Nothing)
+            Debug.toString
             [ ( "null", DecodesTo Body.empty )
             , ( "\"\"", DecodesTo (Body.text "") )
             , ( "\"foo bar\\ncar\"", DecodesTo (Body.text "foo bar\ncar") )
@@ -29,11 +30,13 @@ all =
             ]
         , describeDecoder "body for json"
             (Body.decoder <| Just "application/json")
+            Debug.toString
             [ ( "null", DecodesTo Body.empty )
             , ( "\"{}\"", DecodesTo (Body.json <| Encode.object []) )
             ]
         , describeDecoder "ip"
             IpAddress.decoder
+            Debug.toString
             [ ( "null", FailsToDecode )
             , ( "\"\"", FailsToDecode )
             , ( "\"1.2.3\"", FailsToDecode )
@@ -43,6 +46,7 @@ all =
             ]
         , describeDecoder "Request.methodDecoder"
             Request.methodDecoder
+            Debug.toString
             [ ( "null", FailsToDecode )
             , ( "\"\"", FailsToDecode )
             , ( "\"fizz\"", FailsToDecode )
@@ -59,6 +63,7 @@ all =
             ]
         , describeDecoder "Request.schemeDecoder"
             Request.schemeDecoder
+            Debug.toString
             [ ( "null", FailsToDecode )
             , ( "\"\"", FailsToDecode )
             , ( "\"http\"", DecodesTo Request.Http )
@@ -68,6 +73,7 @@ all =
             ]
         , describeDecoder "Request.decoder"
             Request.decoder
+            Debug.toString
             [ ( "", FailsToDecode )
             , ( "{}", FailsToDecode )
             , ( """
