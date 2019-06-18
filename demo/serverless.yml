@@ -69,17 +69,17 @@ functions:
   #         path: /pipelines
   #         method: ANY
   #
-  # sideEffects:
-  #   handler: src/SideEffects/api.handler
-  #   events:
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /side-effects
-  #         method: ANY
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /side-effects/{proxy+}
-  #         method: ANY
+  sideEffects:
+    handler: src/SideEffects/api.handler
+    events:
+      - http:
+          integration: lambda-proxy
+          path: /side-effects
+          method: ANY
+      - http:
+          integration: lambda-proxy
+          path: /side-effects/{proxy+}
+          method: ANY
   #
   # quoted:
   #   handler: src/Quoted/api.handler
