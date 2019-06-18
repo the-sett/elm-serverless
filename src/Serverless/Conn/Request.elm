@@ -139,7 +139,7 @@ init =
             "test"
             Dict.empty
             ""
-            "http://localhost:80/test"
+            "http://:80/"
         )
 
 
@@ -310,7 +310,7 @@ modelDecoder { headers } =
             , url =
                 schemeToString schemeVal
                     ++ "//"
-                    ++ "hostVal"
+                    ++ hostVal
                     ++ ":"
                     ++ String.fromInt portVal
                     ++ pathVal
