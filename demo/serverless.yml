@@ -49,17 +49,17 @@ functions:
   #         path: /interop/{proxy+}
   #         method: ANY
   #
-  # routing:
-  #   handler: src/Routing/api.handler
-  #   events:
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /routing
-  #         method: ANY
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /routing/{proxy+} # Lambda Proxy Integration
-  #         method: ANY
+  routing:
+    handler: src/Routing/api.handler
+    events:
+      - http:
+          integration: lambda-proxy
+          path: /routing
+          method: ANY
+      - http:
+          integration: lambda-proxy
+          path: /routing/{proxy+} # Lambda Proxy Integration
+          method: ANY
   #
   # pipelines:
   #   handler: src/Pipelines/api.handler
