@@ -43,19 +43,16 @@ type Route
 -}
 routeParser : String -> Maybe Route
 routeParser url =
-    -- Url.fromString url
-    --     |> Maybe.andThen
-    --         (Url.Parser.parse
-    --             (oneOf
-    --                 [ map Home top
-    --                 , map BlogList (s "blog")
-    --                 , map Blog (s "blog" </> string)
-    --                 ]
-    --             )
-    --         )
     Url.fromString url
-        |> Maybe.map (always (Just Home))
-        |> Maybe.withDefault (Just BlogList)
+        |> Maybe.andThen
+            (Url.Parser.parse
+                (oneOf
+                    [ map Home top
+                    , map BlogList (s "blog")
+                    , map Blog (s "blog" </> string)
+                    ]
+                )
+            )
 
 
 {-| Just a big "case of" on the request method and route.

@@ -1,6 +1,6 @@
 module Serverless.Conn.Request exposing
     ( Request, Method(..), Scheme(..)
-    , method, path, queryString
+    , url, method, path, queryString
     , body, asText, asJson
     , header, query, endpoint, stage
     , init, decoder, methodDecoder, schemeDecoder
@@ -28,7 +28,7 @@ These attributes are typically involved in routing requests. See the
 [Routing Demo](https://github.com/ktonon/elm-serverless/blob/master/demo/src/Routing/API.elm)
 for an example.
 
-@docs method, path, queryString
+@docs url, method, path, queryString
 
 
 ## Body
@@ -110,6 +110,7 @@ type alias Model =
     , stage : String
     , queryParams : Dict String String
     , queryString : String
+    , url : String
     }
 
 
@@ -138,6 +139,7 @@ init =
             "test"
             Dict.empty
             ""
+            "http://localhost:80/test"
         )
 
 
@@ -189,6 +191,13 @@ Headers are normalized such that the keys are always `lower-case`.
 header : String -> Request -> Maybe String
 header key (Request { headers }) =
     Dict.get key headers
+
+
+{-| The requested URL if it parsed correctly.
+-}
+url : Request -> String
+url (Request request) =
+    request.url
 
 
 {-| HTTP request method.
@@ -273,9 +282,41 @@ type alias HeadersOnly =
     }
 
 
+schemeToString : Scheme -> String
+schemeToString scheme =
+    case scheme of
+        Http ->
+            "http:"
+
+        Https ->
+            "https:"
+
+
 modelDecoder : HeadersOnly -> Decoder Model
 modelDecoder { headers } =
-    Decode.succeed Model
+    Decode.succeed
+        (\bodyVal headersVal hostVal methodVal pathVal portVal remoteIpVal schemeVal stageVal queryParamsVal queryStringVal ->
+            { body = bodyVal
+            , headers = headersVal
+            , host = hostVal
+            , method = methodVal
+            , path = pathVal
+            , port_ = portVal
+            , remoteIp = remoteIpVal
+            , scheme = schemeVal
+            , stage = stageVal
+            , queryParams = queryParamsVal
+            , queryString = queryStringVal
+            , url =
+                schemeToString schemeVal
+                    ++ "//"
+                    ++ "hostVal"
+                    ++ ":"
+                    ++ String.fromInt portVal
+                    ++ pathVal
+                    ++ queryStringVal
+            }
+        )
         |> required "body" (Body.decoder <| Dict.get "content-type" headers)
         |> hardcoded headers
         |> required "host" Decode.string

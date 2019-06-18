@@ -297,8 +297,7 @@ toSlsMsg api configResult rawMsg =
                     case decodeValue Request.decoder raw of
                         Ok req ->
                             case
-                                api.parseRoute <|
-                                    (Request.path req ++ Request.queryString req)
+                                api.parseRoute <| Request.url req
                             of
                                 Just route ->
                                     RequestAdd <| Conn.init id config api.initialModel route req
