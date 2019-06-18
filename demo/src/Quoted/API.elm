@@ -3,7 +3,7 @@ module Quoted.API exposing (main, pipeline, router, update)
 import Json.Encode
 import Quoted.Middleware
 import Quoted.Pipelines.Quote as Quote
-import Quoted.Route exposing (Route(..))
+import Quoted.Route exposing (Route(..), queryToString)
 import Quoted.Types exposing (Config, Conn, Interop(..), Msg(..), Plug, configDecoder, interopDecoder, interopEncode, requestPort, responsePort)
 import Serverless
 import Serverless.Conn exposing (interop, jsonBody, mapUnsent, method, respond, route, textBody, updateResponse)
@@ -85,7 +85,7 @@ router conn =
         )
     of
         ( GET, Home query ) ->
-            respond ( 200, textBody <| (++) "Home: " <| toString query ) conn
+            respond ( 200, textBody <| (++) "Home: " <| queryToString query ) conn
 
         ( _, Quote lang ) ->
             -- Delegate to Pipeline/Quote module.

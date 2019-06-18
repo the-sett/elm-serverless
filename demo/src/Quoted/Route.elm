@@ -1,4 +1,4 @@
-module Quoted.Route exposing (Lang(..), Query, Route(..), Sort(..), lang, query, route, sort)
+module Quoted.Route exposing (Lang(..), Query, Route(..), Sort(..), lang, query, queryToString, route, sort)
 
 import Url.Parser exposing ((</>), (<?>), Parser, map, oneOf, s, string, top)
 import Url.Parser.Query as Query
@@ -52,6 +52,11 @@ query =
             <?> (Query.string "q" |> Query.map (Maybe.withDefault ""))
             <?> (Query.string "sort" |> Query.map sort)
         )
+
+
+queryToString : Query -> String
+queryToString q =
+    "query"
 
 
 sort : Maybe String -> Sort
