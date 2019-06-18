@@ -62,6 +62,7 @@ import Serverless.Conn.Body as Body
 import Serverless.Conn.Pool as ConnPool
 import Serverless.Conn.Request as Request
 import Serverless.Conn.Response as Response exposing (Status)
+import Url exposing (Url)
 
 
 {-| Serverless program type.
@@ -125,7 +126,7 @@ and not just on `model`.
 type alias HttpApi config model route interop msg =
     { configDecoder : Decoder config
     , initialModel : model
-    , parseRoute : String -> Maybe route
+    , parseRoute : Url -> Maybe route
     , endpoint : Conn config model route interop -> ( Conn config model route interop, Cmd msg )
     , update : msg -> Conn config model route interop -> ( Conn config model route interop, Cmd msg )
     , interop : Interop interop msg
@@ -213,7 +214,7 @@ noInterop =
             }
 
 -}
-noRoutes : String -> Maybe ()
+noRoutes : Url -> Maybe ()
 noRoutes _ =
     Just ()
 
@@ -297,7 +298,9 @@ toSlsMsg api configResult rawMsg =
                     case decodeValue Request.decoder raw of
                         Ok req ->
                             case
-                                api.parseRoute <| Request.url req
+                                Request.url req
+                                    |> Url.fromString
+                                    |> Maybe.andThen api.parseRoute
                             of
                                 Just route ->
                                     RequestAdd <| Conn.init id config api.initialModel route req

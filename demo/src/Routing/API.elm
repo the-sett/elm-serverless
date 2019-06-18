@@ -24,7 +24,13 @@ main =
 
         -- Parses the request path and query string into Elm data.
         -- If parsing fails, a 404 is automatically sent.
-        , parseRoute = routeParser
+        , parseRoute =
+            oneOf
+                [ map Home top
+                , map BlogList (s "blog")
+                , map Blog (s "blog" </> string)
+                ]
+                |> Url.Parser.parse
 
         -- Entry point for new connections.
         , endpoint = router
@@ -41,7 +47,6 @@ type Route
 
 {-| Perhaps the String -> Url bit should be part of the elm-serverless framework?
 -}
-routeParser : String -> Maybe Route
 routeParser url =
     Url.fromString url
         |> Maybe.andThen
