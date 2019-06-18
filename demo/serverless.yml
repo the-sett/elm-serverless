@@ -29,13 +29,13 @@ functions:
           path: /config
           method: ANY
 
-  # forms:
-  #   handler: src/Forms/api.handler
-  #   events:
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /forms
-  #         method: ANY
+  forms:
+    handler: src/Forms/api.handler
+    events:
+      - http:
+          integration: lambda-proxy
+          path: /forms
+          method: ANY
   #
   # interop:
   #   handler: src/Interop/api.handler
