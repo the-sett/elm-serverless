@@ -36,19 +36,19 @@ functions:
           integration: lambda-proxy
           path: /forms
           method: ANY
-  #
-  # interop:
-  #   handler: src/Interop/api.handler
-  #   events:
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /interop
-  #         method: ANY
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /interop/{proxy+}
-  #         method: ANY
-  #
+
+  interop:
+    handler: src/Interop/api.handler
+    events:
+      - http:
+          integration: lambda-proxy
+          path: /interop
+          method: ANY
+      - http:
+          integration: lambda-proxy
+          path: /interop/{proxy+}
+          method: ANY
+
   routing:
     handler: src/Routing/api.handler
     events:

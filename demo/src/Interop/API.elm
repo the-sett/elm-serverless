@@ -4,7 +4,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Serverless
 import Serverless.Conn exposing (interop, jsonBody, respond, route)
-import UrlParser exposing ((</>), int, map, oneOf, s, top)
+import Url.Parser exposing ((</>), int, map, oneOf, s, top)
 
 
 {-| Shows how to call JavaScript functions.
@@ -19,13 +19,13 @@ main =
 
         -- Route /:lowerBound/:upperBound
         , parseRoute =
-            UrlParser.parseString <|
-                oneOf
-                    [ map NumberRange (int </> int)
-                    , map (NumberRange 0) int
-                    , map (NumberRange 0 1000000000) top
-                    , map Unit (s "unit")
-                    ]
+            oneOf
+                [ map NumberRange (int </> int)
+                , map (NumberRange 0) int
+                , map (NumberRange 0 1000000000) top
+                , map Unit (s "unit")
+                ]
+                |> Url.Parser.parse
 
         -- Entry point for new connections.
         , endpoint = endpoint
