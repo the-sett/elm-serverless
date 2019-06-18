@@ -20,7 +20,7 @@ router lang conn =
                 ( 501
                 , textBody <|
                     "Not implemented, but I got this body: "
-                        ++ (conn |> Conn.request |> Request.body |> toString)
+                  --  ++ (conn |> Conn.request |> Request.body |> toString)
                 )
                 conn
 
@@ -66,7 +66,8 @@ gotQuotes result conn =
                 conn
 
         Err err ->
-            respond ( 500, textBody <| toString err ) conn
+            --respond ( 500, textBody <| toString err ) conn
+            respond ( 500, textBody <| "HTTP Error" ) conn
 
 
 
