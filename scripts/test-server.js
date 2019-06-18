@@ -65,9 +65,8 @@ findServer().then(server => {
     process.kill(server.pid);
   }
   logger.info(`Starting new test server`);
-  startServer();
+  setTimeout(startServer, 500);
 }).catch(err => {
-  logger.info(`Error on restart test server`);
   logger.error(err);
   process.exit(1);
 });
