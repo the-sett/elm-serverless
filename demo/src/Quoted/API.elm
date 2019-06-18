@@ -9,7 +9,7 @@ import Serverless
 import Serverless.Conn exposing (interop, jsonBody, mapUnsent, method, respond, route, textBody, updateResponse)
 import Serverless.Conn.Request exposing (Method(..))
 import Serverless.Plug as Plug exposing (plug)
-import UrlParser
+import Url.Parser
 
 
 {-| A Serverless.Program is parameterized by your 5 custom types
@@ -33,7 +33,7 @@ main =
 
         -- Parses the request path and query string into Elm data.
         -- If parsing fails, a 404 is automatically sent.
-        , parseRoute = UrlParser.parseString Quoted.Route.route
+        , parseRoute = UrlParser.parse Quoted.Route.route
 
         -- Entry point for new connections.
         -- This function composition passes the conn through a pipeline and then

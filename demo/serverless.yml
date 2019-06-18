@@ -80,15 +80,15 @@ functions:
           integration: lambda-proxy
           path: /side-effects/{proxy+}
           method: ANY
-  #
-  # quoted:
-  #   handler: src/Quoted/api.handler
-  #   events:
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /quoted
-  #         method: ANY
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /quoted/{proxy+}
-  #         method: ANY
+
+  quoted:
+    handler: src/Quoted/api.handler
+    events:
+      - http:
+          integration: lambda-proxy
+          path: /quoted
+          method: ANY
+      - http:
+          integration: lambda-proxy
+          path: /quoted/{proxy+}
+          method: ANY

@@ -1,6 +1,6 @@
 module Quoted.Route exposing (Lang(..), Query, Route(..), Sort(..), lang, query, route, sort)
 
-import UrlParser exposing (..)
+import Url.Parser exposing ((</>), (<?>), Parser, map, oneOf, s, string, top)
 
 
 type Route
