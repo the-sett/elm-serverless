@@ -2,7 +2,7 @@ module Serverless.Conn.Request exposing
     ( Request, Method(..), Scheme(..)
     , url, method, path, queryString
     , body, asText, asJson
-    , header, query, endpoint, stage
+    , header, query, endpoint, stage, methodToString
     , init, decoder, methodDecoder, schemeDecoder
     )
 
@@ -42,7 +42,7 @@ for an example.
 
 ## Other Attributes
 
-@docs header, query, endpoint, stage
+@docs header, query, endpoint, stage, methodToString
 
 
 ## Misc
@@ -85,6 +85,37 @@ type Method
     | POST
     | PUT
     | TRACE
+
+
+methodToString : Method -> String
+methodToString meth =
+    case meth of
+        CONNECT ->
+            "CONNECT"
+
+        DELETE ->
+            "DELETE"
+
+        GET ->
+            "GET"
+
+        HEAD ->
+            "HEAD"
+
+        OPTIONS ->
+            "OPTIONS"
+
+        PATCH ->
+            "PATCH"
+
+        POST ->
+            "POST"
+
+        PUT ->
+            "PUT"
+
+        TRACE ->
+            "TRACE"
 
 
 {-| Request scheme (a.k.a. protocol).
