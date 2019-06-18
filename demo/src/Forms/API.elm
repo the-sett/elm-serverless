@@ -39,7 +39,7 @@ endpoint conn =
             decodeValue personDecoder val |> Result.mapError errorToString
 
         result =
-            conn |> (request >> body >> asJson) |> Result.andThen decodeResult
+            conn |> request |> body |> asJson |> Result.andThen decodeResult
     in
     case ( method conn, result ) of
         ( POST, Ok person ) ->
