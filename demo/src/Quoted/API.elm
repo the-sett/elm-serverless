@@ -4,7 +4,7 @@ import Json.Encode
 import Quoted.Middleware
 import Quoted.Pipelines.Quote as Quote
 import Quoted.Route exposing (Route(..))
-import Quoted.Types exposing (..)
+import Quoted.Types exposing (Config, Conn, Interop(..), Msg(..), Plug, configDecoder, interopDecoder, interopEncode, requestPort, responsePort)
 import Serverless
 import Serverless.Conn exposing (interop, jsonBody, mapUnsent, method, respond, route, textBody, updateResponse)
 import Serverless.Conn.Request exposing (Method(..))
@@ -33,7 +33,7 @@ main =
 
         -- Parses the request path and query string into Elm data.
         -- If parsing fails, a 404 is automatically sent.
-        , parseRoute = UrlParser.parse Quoted.Route.route
+        , parseRoute = Url.Parser.parse Quoted.Route.route
 
         -- Entry point for new connections.
         -- This function composition passes the conn through a pipeline and then
