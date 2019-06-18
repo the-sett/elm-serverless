@@ -1,6 +1,7 @@
 port module Pipelines.API exposing (main)
 
-import Json.Decode.Pipeline exposing (decode, required)
+import Json.Decode exposing (succeed)
+import Json.Decode.Pipeline exposing (required)
 import Serverless
 import Serverless.Conn exposing (..)
 import Serverless.Conn.Response exposing (addHeader, setBody, setStatus)
@@ -37,7 +38,7 @@ main =
 
         -- Some middleware may provide a configuration decoder.
         , configDecoder =
-            decode Config
+            succeed Config
                 |> required "cors" Serverless.Cors.configDecoder
         }
 

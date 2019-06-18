@@ -60,15 +60,15 @@ functions:
           integration: lambda-proxy
           path: /routing/{proxy+} # Lambda Proxy Integration
           method: ANY
-  #
-  # pipelines:
-  #   handler: src/Pipelines/api.handler
-  #   events:
-  #     - http:
-  #         integration: lambda-proxy
-  #         path: /pipelines
-  #         method: ANY
-  #
+
+  pipelines:
+    handler: src/Pipelines/api.handler
+    events:
+      - http:
+          integration: lambda-proxy
+          path: /pipelines
+          method: ANY
+
   sideEffects:
     handler: src/SideEffects/api.handler
     events:
