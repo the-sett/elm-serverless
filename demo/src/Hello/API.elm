@@ -10,14 +10,13 @@ Most functionality has been disabled, by opting-out with the
 `Serverless.no...` constructors
 
 -}
-main : Serverless.Program () () () () ()
+main : Serverless.Program () () () ()
 main =
     Serverless.httpApi
         { configDecoder = Serverless.noConfig
         , initialModel = ()
         , parseRoute = Serverless.noRoutes
         , update = Serverless.noSideEffects
-        , interop = Serverless.noInterop
 
         -- Entry point for new connections.
         , endpoint = respond ( 200, textBody "Hello Elm on AWS Lambda" )
