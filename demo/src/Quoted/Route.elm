@@ -1,5 +1,6 @@
-module Quoted.Route exposing (Lang(..), Query, Route(..), Sort(..), lang, query, queryToString, route, sort)
+module Quoted.Route exposing (Lang(..), Query, Route(..), Sort(..), lang, query, queryEncoder, route, sort)
 
+import Json.Encode as Encode
 import Url.Parser exposing ((</>), (<?>), Parser, map, oneOf, s, string, top)
 import Url.Parser.Query as Query
 
@@ -54,9 +55,22 @@ query =
         )
 
 
-queryToString : Query -> String
-queryToString q =
-    "query"
+queryEncoder : Query -> Encode.Value
+queryEncoder qry =
+    [ ( "q", Encode.string qry.q )
+    , ( "sort", sortEncoder qry.sort )
+    ]
+        |> Encode.object
+
+
+sortEncoder : Sort -> Encode.Value
+sortEncoder srt =
+    case srt of
+        Asc ->
+            Encode.string "Asc"
+
+        Desc ->
+            Encode.string "Desc"
 
 
 sort : Maybe String -> Sort

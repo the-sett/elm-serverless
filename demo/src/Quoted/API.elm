@@ -1,9 +1,9 @@
 module Quoted.API exposing (main, pipeline, router, update)
 
-import Json.Encode
+import Json.Encode as Encode
 import Quoted.Middleware
 import Quoted.Pipelines.Quote as Quote
-import Quoted.Route exposing (Route(..), queryToString)
+import Quoted.Route exposing (Route(..), queryEncoder)
 import Quoted.Types exposing (Config, Conn, Interop(..), Msg(..), Plug, configDecoder, interopDecoder, interopEncode, requestPort, responsePort)
 import Serverless
 import Serverless.Conn exposing (interop, jsonBody, mapUnsent, method, respond, route, textBody, updateResponse)
@@ -85,7 +85,7 @@ router conn =
         )
     of
         ( GET, Home query ) ->
-            respond ( 200, textBody <| (++) "Home: " <| queryToString query ) conn
+            respond ( 200, textBody <| (++) "Home: " <| Encode.encode 0 (queryEncoder query) ) conn
 
         ( _, Quote lang ) ->
             -- Delegate to Pipeline/Quote module.
@@ -121,4 +121,4 @@ update msg conn =
         -- passed into Serverless.httpApi is responsible for converting interop
         -- results into application messages.
         RandomNumber val ->
-            respond ( 200, jsonBody <| Json.Encode.int val ) conn
+            respond ( 200, jsonBody <| Encode.int val ) conn
