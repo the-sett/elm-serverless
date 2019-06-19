@@ -1,9 +1,9 @@
 {
     "type": "package",
-    "name": "ktonon/elm-serverless",
-    "summary": "Deploy an elm worker to AWS Lambda using serverless",
+    "name": "the-sett/elm-serverless",
+    "summary": "Use Elm with the serverless framework (deploy to AWS, Azure, Google)",
     "license": "MIT",
-    "version": "4.0.1",
+    "version": "1.0.0",
     "exposed-modules": [
         "Serverless",
         "Serverless.Conn",
