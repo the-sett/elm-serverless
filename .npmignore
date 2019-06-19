@@ -1,6 +1,6 @@
 .coverage
-demo
 elm-stuff
+demo
 node_modules
 scripts
 src
@@ -8,5 +8,4 @@ test
 tests
 .*
 circle.yml
-elm.json
-package-lock.json
+elm-package.json
