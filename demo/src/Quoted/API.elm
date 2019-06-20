@@ -5,6 +5,7 @@ import Quoted.Middleware
 import Quoted.Pipelines.Quote as Quote
 import Quoted.Route exposing (Route(..), queryEncoder)
 import Quoted.Types exposing (Config, Conn, Msg(..), Plug, configDecoder, requestPort, responsePort)
+import Random
 import Serverless
 import Serverless.Conn exposing (jsonBody, mapUnsent, method, respond, route, textBody, updateResponse)
 import Serverless.Conn.Request exposing (Method(..))
@@ -87,10 +88,12 @@ router conn =
             -- Delegate to Pipeline/Quote module.
             Quote.router lang conn
 
-        -- ( GET, Number ) ->
-        --     -- This one calls out to a JavaScript function named `getRandom`.
-        --     -- The result comes in as a message `RandomNumber`.
-        --     interop [ GetRandom 1000000000 ] conn
+        ( GET, Number ) ->
+            -- Generate a random number.
+            ( conn
+            , Random.generate RandomNumber <| Random.int 0 1000000000
+            )
+
         ( GET, Buggy ) ->
             respond ( 500, textBody "bugs, bugs, bugs" ) conn
 
@@ -101,8 +104,7 @@ router conn =
 {-| The application update function.
 
 Just like an Elm SPA, an elm-serverless app has a single update
-function which handles messages resulting from interop calls and side-effects
-in general.
+function which handles messages resulting from side-effects.
 
 -}
 update : Msg -> Conn -> ( Conn, Cmd Msg )
@@ -112,8 +114,5 @@ update msg conn =
         GotQuotes result ->
             Quote.gotQuotes result conn
 
-        -- Result of a JavaScript interop call. The `interopDecoder` function
-        -- passed into Serverless.httpApi is responsible for converting interop
-        -- results into application messages.
         RandomNumber val ->
             respond ( 200, jsonBody <| Encode.int val ) conn
