@@ -50,18 +50,9 @@ describe('elmServerless', () => {
       const subscribe = h.init().ports.responsePort.subscribe;
       const responseHandler = subscribe.getCalls()[0].args[0];
       logger.error.getCalls().should.be.empty();
-      responseHandler(['id', '__response__', {}]);
+      responseHandler(['id', {}]);
       logger.error.getCalls().should.not.be.empty();
       logger.error.getCalls()[0].args.should.deepEqual(['No callback for ID: id']);
-    });
-
-    it('handles interop', () => {
-      const h = makeHandler();
-      const logger = spyLogger();
-      httpApi({ handler: h, logger, requestPort, responsePort });
-      const subscribe = h.init().ports.responsePort.subscribe;
-      const responseHandler = subscribe.getCalls()[0].args[0];
-      (() => responseHandler(['id', 'missingHandler', {}])).should.throw(/^Missing interop/);
     });
 
     it('returns a request handler', () => {
