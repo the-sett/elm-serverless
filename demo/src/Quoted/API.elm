@@ -18,7 +18,6 @@ import Url.Parser
   - Config is a server load-time record of deployment specific values
   - Model is for whatever you need during the processing of a request
   - Route represents the set of routes your app will handle
-  - Interop enumerates the JavaScript functions which may be called
   - Msg is your app message type
 
 -}
@@ -45,9 +44,9 @@ main =
         , update = update
 
         -- Provides ports to the framework which are used for requests,
-        -- responses, and JavaScript interop function calls. Do not use these
-        -- ports directly, the framework handles associating messages to
-        -- specific connections with unique identifiers.
+        -- and responses. Do not use these ports directly, the framework
+        -- handles associating messages to specific connections with
+        -- unique identifiers.
         , requestPort = requestPort
         , responsePort = responsePort
         }

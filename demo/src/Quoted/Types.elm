@@ -51,13 +51,6 @@ type Msg
     | RandomNumber Int
 
 
-{-| Your custom interop type.
-
-Should enumerate the interop (JavaScript) functions which can be called.
-
--}
-
-
 
 -- SERVERLESS TYPES
 --
