@@ -120,7 +120,7 @@ type alias HttpApi config model route msg =
 
 
 type alias IO =
-    ( String, String, Json.Encode.Value )
+    ( String, Json.Encode.Value )
 
 
 {-| Type of port through which the request is received.
@@ -247,35 +247,30 @@ toSlsMsg :
     -> SlsMsg config model route msg
 toSlsMsg api configResult rawMsg =
     case ( configResult, rawMsg ) of
-        ( Err err, RequestPortMsg ( id, _, _ ) ) ->
+        ( Err err, RequestPortMsg ( id, _ ) ) ->
             ProcessingError id 500 True <|
                 (++) "Failed to parse configuration flags. " err
 
-        ( Ok config, RequestPortMsg ( id, action, raw ) ) ->
-            case action of
-                "__request__" ->
-                    case decodeValue Request.decoder raw of
-                        Ok req ->
-                            case
-                                Request.url req
-                                    |> Url.fromString
-                                    |> Maybe.andThen api.parseRoute
-                            of
-                                Just route ->
-                                    RequestAdd <| Conn.init id config api.initialModel route req
+        ( Ok config, RequestPortMsg ( id, raw ) ) ->
+            case decodeValue Request.decoder raw of
+                Ok req ->
+                    case
+                        Request.url req
+                            |> Url.fromString
+                            |> Maybe.andThen api.parseRoute
+                    of
+                        Just route ->
+                            RequestAdd <| Conn.init id config api.initialModel route req
 
-                                Nothing ->
-                                    ProcessingError id 404 False <|
-                                        (++) "Could not parse route: "
-                                            (Request.path req)
+                        Nothing ->
+                            ProcessingError id 404 False <|
+                                (++) "Could not parse route: "
+                                    (Request.path req)
 
-                        Err err ->
-                            ProcessingError id 500 False <|
-                                (++) "Misconfigured server. Make sure the elm-serverless npm package version matches the elm package version."
-                                    (Json.Decode.errorToString err)
-
-                otherAction ->
-                    ProcessingError id 500 False "Error: Unknown action."
+                Err err ->
+                    ProcessingError id 500 False <|
+                        (++) "Misconfigured server. Make sure the elm-serverless npm package version matches the elm package version."
+                            (Json.Decode.errorToString err)
 
         ( _, HandlerMsg id msg ) ->
             RequestUpdate id msg
@@ -337,7 +332,6 @@ updateChildHelper api ( conn, cmd ) model =
             ( { model | pool = model.pool |> ConnPool.remove conn }
             , api.responsePort
                 ( Conn.id conn
-                , "__response__"
                 , Conn.jsonEncodedResponse conn
                 )
             )
@@ -374,7 +368,6 @@ send :
 send { responsePort } id code msg =
     responsePort
         ( id
-        , "__response__"
         , Response.init
             |> Response.setStatus code
             |> Response.setBody (Body.text msg)
