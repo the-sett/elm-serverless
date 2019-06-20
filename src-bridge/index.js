@@ -51,7 +51,7 @@ const httpApi = ({
   const handleResponse = responseHandler({ pool, logger });
 
   app.ports[responsePort].subscribe(([id, jsonValue]) => {
-      handleResponse(id, jsonValue);
+    handleResponse(id, jsonValue);
   });
 
   return requestHandler({ pool, requestPort: app.ports[requestPort] });

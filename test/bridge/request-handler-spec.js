@@ -50,7 +50,7 @@ describe('requestHandler({ pool })', () => {
     h.requestPort.send.called.should.be.false();
     h({ id }, context, sinon.spy());
     const { req } = h.pool.take(id);
-    h.requestPort.send.calledWith([id, '__request__', req]).should.be.true();
+    h.requestPort.send.calledWith([id, req]).should.be.true();
   });
 
   it('leaves string bodies unchanged', () => {
