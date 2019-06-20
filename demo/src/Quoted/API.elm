@@ -4,9 +4,9 @@ import Json.Encode as Encode
 import Quoted.Middleware
 import Quoted.Pipelines.Quote as Quote
 import Quoted.Route exposing (Route(..), queryEncoder)
-import Quoted.Types exposing (Config, Conn, Interop(..), Msg(..), Plug, configDecoder, interopDecoder, interopEncode, requestPort, responsePort)
+import Quoted.Types exposing (Config, Conn, Msg(..), Plug, configDecoder, requestPort, responsePort)
 import Serverless
-import Serverless.Conn exposing (interop, jsonBody, mapUnsent, method, respond, route, textBody, updateResponse)
+import Serverless.Conn exposing (jsonBody, mapUnsent, method, respond, route, textBody, updateResponse)
 import Serverless.Conn.Request exposing (Method(..))
 import Serverless.Plug as Plug exposing (plug)
 import Url.Parser
@@ -21,7 +21,7 @@ import Url.Parser
   - Msg is your app message type
 
 -}
-main : Serverless.Program Config () Route Interop Msg
+main : Serverless.Program Config () Route Msg
 main =
     Serverless.httpApi
         { initialModel = ()
@@ -42,10 +42,6 @@ main =
 
         -- Update function which operates on Conn.
         , update = update
-
-        -- Enumerates JavaScript interop functions and provides JSON coders
-        -- to convert data between Elm and JSON.
-        , interop = Serverless.Interop interopEncode interopDecoder
 
         -- Provides ports to the framework which are used for requests,
         -- responses, and JavaScript interop function calls. Do not use these
@@ -91,11 +87,10 @@ router conn =
             -- Delegate to Pipeline/Quote module.
             Quote.router lang conn
 
-        ( GET, Number ) ->
-            -- This one calls out to a JavaScript function named `getRandom`.
-            -- The result comes in as a message `RandomNumber`.
-            interop [ GetRandom 1000000000 ] conn
-
+        -- ( GET, Number ) ->
+        --     -- This one calls out to a JavaScript function named `getRandom`.
+        --     -- The result comes in as a message `RandomNumber`.
+        --     interop [ GetRandom 1000000000 ] conn
         ( GET, Buggy ) ->
             respond ( 500, textBody "bugs, bugs, bugs" ) conn
 
