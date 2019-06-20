@@ -1,7 +1,6 @@
 const xmlhttprequest = require('xmlhttprequest');
 
 const defaultLogger = require('./logger');
-const interopHandler = require('./interop-handler');
 const Pool = require('./pool');
 const requestHandler = require('./request-handler');
 const responseHandler = require('./response-handler');
@@ -22,7 +21,6 @@ const invalidElmApp = msg => {
 const httpApi = ({
   handler,
   config = {},
-  interop = {},
   logger = defaultLogger,
   requestPort = 'requestPort',
   responsePort = 'responsePort',
@@ -50,15 +48,10 @@ const httpApi = ({
   });
 
   const pool = new Pool({ logger });
-  const handleInterop = interopHandler({ interop, resultPort: app.ports[requestPort] });
   const handleResponse = responseHandler({ pool, logger });
 
-  app.ports[responsePort].subscribe(([id, key, jsonValue]) => {
-    if (key === '__response__') {
+  app.ports[responsePort].subscribe(([id, jsonValue]) => {
       handleResponse(id, jsonValue);
-    } else {
-      handleInterop(id, key, jsonValue);
-    }
   });
 
   return requestHandler({ pool, requestPort: app.ports[requestPort] });

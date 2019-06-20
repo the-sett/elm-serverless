@@ -49,5 +49,5 @@ module.exports = ({
 
   pool.put(id, req, callback);
   logger.info(JSON.stringify({ req }, null, 2));
-  requestPort.send([id, '__request__', req]);
+  requestPort.send([id, req]);
 };
