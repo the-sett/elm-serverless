@@ -1,4 +1,4 @@
-# elm <img src="https://raw.githubusercontent.com/the-sett/elm-serverless/master/es-logo-small.png" width="37"> serverless
+# elm-serverless
 
 [![serverless](http://public.serverless.com/badges/v3.svg)](http://www.serverless.com)
 
