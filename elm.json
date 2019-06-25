@@ -3,7 +3,7 @@
     "name": "the-sett/elm-serverless",
     "summary": "Use Elm with the serverless framework (deploy to AWS, Azure, Google)",
     "license": "MIT",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "exposed-modules": [
         "Serverless",
         "Serverless.Conn",
