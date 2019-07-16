@@ -19,19 +19,12 @@ const invalidElmApp = msg => {
 };
 
 const httpApi = ({
-  handler,
+  app,
   config = {},
   logger = defaultLogger,
   requestPort = 'requestPort',
   responsePort = 'responsePort',
 } = {}) => {
-  validate(handler, 'init', {
-    missing: `Missing handler argument.${handlerExample}`,
-    invalid: `Invalid handler argument.${handlerExample}Got`,
-  });
-
-  const app = handler.init({ flags: config });
-
   if (typeof app !== 'object') {
     invalidElmApp(`Got: ${validate.inspect(app)}`);
   }
@@ -54,7 +47,7 @@ const httpApi = ({
     handleResponse(id, jsonValue);
   });
 
-  return requestHandler({ pool, requestPort: app.ports[requestPort], app });
+  return requestHandler({ pool, requestPort: app.ports[requestPort] });
 };
 
 module.exports = { httpApi };
