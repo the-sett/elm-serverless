@@ -54,7 +54,7 @@ const httpApi = ({
     handleResponse(id, jsonValue);
   });
 
-  return requestHandler({ pool, requestPort: app.ports[requestPort] });
+  return requestHandler({ pool, requestPort: app.ports[requestPort], app });
 };
 
 module.exports = { httpApi };
