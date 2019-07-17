@@ -39,7 +39,7 @@ endpoint : Conn -> ( Conn, Cmd Msg )
 endpoint conn =
     case route conn of
         Unit ->
-            ( conn, requestRand () )
+            ( conn, Serverless.Conn.id conn |> requestRand )
 
 
 
@@ -71,7 +71,7 @@ port requestPort : Serverless.RequestPort msg
 port responsePort : Serverless.ResponsePort msg
 
 
-port requestRand : () -> Cmd msg
+port requestRand : Serverless.Conn.Id -> Cmd msg
 
 
 port respondRand : Serverless.InteropPort msg
