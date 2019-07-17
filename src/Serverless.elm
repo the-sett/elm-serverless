@@ -1,6 +1,6 @@
 module Serverless exposing
     ( httpApi, HttpApi, Program
-    , RequestPort, ResponsePort
+    , RequestPort, ResponsePort, InteropPort
     , noConfig, noRoutes, noSideEffects, noPorts
     )
 
@@ -30,7 +30,7 @@ with the following signatures. See the
 [Hello World Demo](https://github.com/ktonon/elm-serverless/blob/master/demo/src/Hello)
 for a usage example.
 
-@docs RequestPort, ResponsePort
+@docs RequestPort, ResponsePort, InteropPort
 
 
 ## Initialization Helpers
