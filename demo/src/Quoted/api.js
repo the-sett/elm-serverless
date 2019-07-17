@@ -17,19 +17,7 @@ const config = rc('demo', {
 });
 
 module.exports.handler = elmServerless.httpApi({
-  handler: Elm.Quoted.API,
+  app: Elm.Quoted.API.init({ flags: config }),
   requestPort: 'requestPort',
   responsePort: 'responsePort',
-
-  // One handler per Interop type constructor
-  interop: {
-    // Handles `GetRandom Int`
-    getRandom: upper => Math.floor(Math.random() * upper),
-  },
-
-  // Config is a record type that you define.
-  // You will also provide a JSON decoder for this.
-  // It should be deployment data that is constant, perhaps loaded from
-  // an environment variable.
-  config,
 });

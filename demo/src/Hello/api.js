@@ -18,7 +18,7 @@ const { Elm } = require('./API.elm');
 module.exports.handler = elmServerless.httpApi({
 
   // Your elm app is the handler
-  handler: Elm.Hello.API,
+  app: Elm.Hello.API.init(),
 
   // Because elm libraries cannot expose ports, you have to define them.
   // Whatever you call them, you have to provide the names.

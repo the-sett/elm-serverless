@@ -13,6 +13,5 @@ const config = rc('demoPipelines', {
 });
 
 module.exports.handler = elmServerless.httpApi({
-  handler: Elm.Pipelines.API,
-  config,
+  app: Elm.Pipelines.API.init({ flags: config }),
 });
