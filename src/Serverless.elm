@@ -116,7 +116,7 @@ type alias HttpApi config model route msg =
     , update : msg -> Conn config model route -> ( Conn config model route, Cmd msg )
     , requestPort : RequestPort (Msg msg)
     , responsePort : ResponsePort (Msg msg)
-    , ports : List (InteropPort (Msg msg))
+    , ports : List ( InteropPort (Msg msg), Json.Encode.Value -> msg )
     }
 
 
@@ -375,9 +375,18 @@ sub_ :
     -> Model config model route
     -> Sub (Msg msg)
 sub_ api model =
+    let
+        fnMap : (Json.Encode.Value -> msg) -> (IO -> Msg msg)
+        fnMap fn io =
+            HandlerMsg (Tuple.first io) (fn (Tuple.second io))
+
+        interopSubs =
+            List.map (\( interopPort, handler ) -> interopPort (fnMap handler)) api.ports
+    in
     Sub.batch
-        [ api.requestPort RequestPortMsg
-        ]
+        (api.requestPort RequestPortMsg
+            :: interopSubs
+        )
 
 
 
