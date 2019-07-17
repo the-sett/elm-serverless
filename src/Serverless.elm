@@ -1,7 +1,7 @@
 module Serverless exposing
     ( httpApi, HttpApi, Program
     , RequestPort, ResponsePort
-    , noConfig, noRoutes, noSideEffects
+    , noConfig, noRoutes, noSideEffects, noPorts
     )
 
 {-| Use `httpApi` to define a `Program` that responds to HTTP requests. Take a look
@@ -38,7 +38,7 @@ for a usage example.
 Various aspects of Program may not be needed. These functions are provided as a
 convenient way to opt-out.
 
-@docs noConfig, noRoutes, noSideEffects
+@docs noConfig, noRoutes, noSideEffects, noPorts
 
 -}
 
@@ -116,11 +116,18 @@ type alias HttpApi config model route msg =
     , update : msg -> Conn config model route -> ( Conn config model route, Cmd msg )
     , requestPort : RequestPort (Msg msg)
     , responsePort : ResponsePort (Msg msg)
+    , ports : List (InteropPort (Msg msg))
     }
 
 
 type alias IO =
     ( String, Json.Encode.Value )
+
+
+{-| The type of all incoming interop ports.
+-}
+type alias InteropPort msg =
+    (IO -> msg) -> Sub msg
 
 
 {-| Type of port through which the request is received.
@@ -196,6 +203,22 @@ noSideEffects :
     -> ( Conn config model route, Cmd () )
 noSideEffects _ conn =
     ( conn, Cmd.none )
+
+
+{-| Opt-out of interop ports.
+
+    main : Serverless.Program config model route ()
+    main =
+        Serverless.httpApi
+            { ports = noPorts
+
+            -- ...
+            }
+
+-}
+noPorts : List (InteropPort (Msg msg))
+noPorts =
+    []
 
 
 
@@ -352,7 +375,9 @@ sub_ :
     -> Model config model route
     -> Sub (Msg msg)
 sub_ api model =
-    api.requestPort RequestPortMsg
+    Sub.batch
+        [ api.requestPort RequestPortMsg
+        ]
 
 
 

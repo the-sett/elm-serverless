@@ -20,6 +20,7 @@ main =
         , update = Serverless.noSideEffects
         , requestPort = requestPort
         , responsePort = responsePort
+        , ports = Serverless.noPorts
 
         -- Parses the request path and query string into Elm data.
         -- If parsing fails, a 404 is automatically sent.
