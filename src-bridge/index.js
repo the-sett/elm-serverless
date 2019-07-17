@@ -8,12 +8,6 @@ const validate = require('./validate');
 
 global.XMLHttpRequest = xmlhttprequest.XMLHttpRequest;
 
-const handlerExample = `
-If the Serverless.Program is defined in API.elm then the handler is:
-
-    const handler = require('./API.elm').API;
-`;
-
 const invalidElmApp = msg => {
   throw new Error(`handler.init did not return valid Elm app.${msg}`);
 };

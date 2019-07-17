@@ -65,12 +65,7 @@ describe('elmServerless', () => {
 
     it('requires an app', () => {
       (() => httpApi({ requestPort, responsePort }))
-        .should.throw(/^Missing app argument/);
-    });
-
-    it('requires a valid app', () => {
-      (() => httpApi({ app: { init: 'foo' }, requestPort, responsePort }))
-        .should.throw(/^Invalid handler argument(.|\n)*?Got: { init: 'foo' }/);
+        .should.throw(/^handler.init did not return valid Elm app.Got: undefined/);
     });
 
     it('requires a requestPort', () => {
