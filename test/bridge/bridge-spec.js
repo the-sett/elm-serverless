@@ -6,7 +6,7 @@ const spyLogger = require('./spy-logger');
 
 const requestPort = 'requestPort';
 const responsePort = 'responsePort';
-const makeHandler = () => ({
+const makeWorkerApp = () => ({
   init: sinon.stub().returns({
     ports: {
       requestPort: { send: sinon.spy() },
@@ -16,27 +16,28 @@ const makeHandler = () => ({
 });
 
 describe('elmServerless', () => {
-  describe('.httpApi({ handler, config, requestPort, responsePort })', () => {
+  describe('.httpApi({ app, requestPort, responsePort })', () => {
     it('is a function', () => {
       should(httpApi).be.a.Function();
     });
 
-    it('works with valid handler, requestPort, and responsePort', () => {
-      (() => httpApi({ handler: makeHandler(), requestPort, responsePort }))
+    it('works with valid app, requestPort, and responsePort', () => {
+      (() => httpApi({ app: makeWorkerApp().init(), requestPort, responsePort }))
         .should.not.throw();
     });
 
     it('passes config to the handler.init function', () => {
-      const h = makeHandler();
       const config = { some: { app: ['specific', 'configuration'] } };
-      httpApi({ handler: h, config, requestPort, responsePort });
-      h.init.calledWith({ flags: config }).should.be.true();
+      const w = makeWorkerApp();
+      const h = w.init({ flags: config });
+      httpApi({ app: h, requestPort, responsePort });
+      w.init.calledWith({ flags: config }).should.be.true();
     });
 
     it('subscribes to the responsePort', () => {
-      const h = makeHandler();
-      httpApi({ handler: h, requestPort, responsePort });
-      const subscribe = h.init().ports.responsePort.subscribe;
+      const h = makeWorkerApp().init();
+      httpApi({ app: h, requestPort, responsePort });
+      const subscribe = h.ports.responsePort.subscribe;
       subscribe.called.should.be.true();
       const call = subscribe.getCall(0);
       const [func] = call.args;
@@ -44,10 +45,10 @@ describe('elmServerless', () => {
     });
 
     it('handles responses', () => {
-      const h = makeHandler();
+      const h = makeWorkerApp().init();
       const logger = spyLogger();
-      httpApi({ handler: h, logger, requestPort, responsePort });
-      const subscribe = h.init().ports.responsePort.subscribe;
+      httpApi({ app: h, logger, requestPort, responsePort });
+      const subscribe = h.ports.responsePort.subscribe;
       const responseHandler = subscribe.getCalls()[0].args[0];
       logger.error.getCalls().should.be.empty();
       responseHandler(['id', {}]);
@@ -56,34 +57,20 @@ describe('elmServerless', () => {
     });
 
     it('returns a request handler', () => {
-      const h = makeHandler();
-      const func = httpApi({ handler: h, requestPort, responsePort });
+      const h = makeWorkerApp().init();
+      const func = httpApi({ app: h, requestPort, responsePort });
       should(func).be.a.Function();
       should(func.name).equal('requestHandler');
     });
 
-    it('requires a handler', () => {
+    it('requires an app', () => {
       (() => httpApi({ requestPort, responsePort }))
-        .should.throw(/^Missing handler argument/);
-    });
-
-    it('requires a valid handler', () => {
-      (() => httpApi({ handler: { init: 'foo' }, requestPort, responsePort }))
-        .should.throw(/^Invalid handler argument(.|\n)*?Got: { init: 'foo' }/);
-    });
-
-    it('expects handler.init to return an object', () => {
-      (() => httpApi({
-        handler: { init: sinon.stub().returns('foo') },
-        requestPort,
-        responsePort,
-      }))
-        .should.throw(/^handler\.init did not return valid Elm app.*?Got: 'foo'$/);
+        .should.throw(/^handler.init did not return valid Elm app.Got: undefined/);
     });
 
     it('requires a requestPort', () => {
       (() => httpApi({
-        handler: makeHandler(),
+        app: makeWorkerApp().init(),
         requestPort: 'reqPort',
         responsePort,
       }))
@@ -92,7 +79,7 @@ describe('elmServerless', () => {
 
     it('requires a valid requestPort', () => {
       (() => httpApi({
-        handler: makeHandler(),
+        app: makeWorkerApp().init(),
         requestPort: 'responsePort',
         responsePort,
       }))
@@ -101,7 +88,7 @@ describe('elmServerless', () => {
 
     it('requires a responsePort', () => {
       (() => httpApi({
-        handler: makeHandler(),
+        app: makeWorkerApp().init(),
         requestPort,
         responsePort: 'respPort',
       }))
@@ -110,7 +97,7 @@ describe('elmServerless', () => {
 
     it('requires a valid responsePort', () => {
       (() => httpApi({
-        handler: makeHandler(),
+        app: makeWorkerApp().init(),
         requestPort,
         responsePort: 'requestPort',
       }))

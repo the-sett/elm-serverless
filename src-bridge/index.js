@@ -8,30 +8,16 @@ const validate = require('./validate');
 
 global.XMLHttpRequest = xmlhttprequest.XMLHttpRequest;
 
-const handlerExample = `
-If the Serverless.Program is defined in API.elm then the handler is:
-
-    const handler = require('./API.elm').API;
-`;
-
 const invalidElmApp = msg => {
   throw new Error(`handler.init did not return valid Elm app.${msg}`);
 };
 
 const httpApi = ({
-  handler,
-  config = {},
+  app,
   logger = defaultLogger,
   requestPort = 'requestPort',
   responsePort = 'responsePort',
 } = {}) => {
-  validate(handler, 'init', {
-    missing: `Missing handler argument.${handlerExample}`,
-    invalid: `Invalid handler argument.${handlerExample}Got`,
-  });
-
-  const app = handler.init({ flags: config });
-
   if (typeof app !== 'object') {
     invalidElmApp(`Got: ${validate.inspect(app)}`);
   }
@@ -54,7 +40,7 @@ const httpApi = ({
     handleResponse(id, jsonValue);
   });
 
-  return requestHandler({ pool, requestPort: app.ports[requestPort], app });
+  return requestHandler({ pool, requestPort: app.ports[requestPort] });
 };
 
 module.exports = { httpApi };
