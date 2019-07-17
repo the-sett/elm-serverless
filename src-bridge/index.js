@@ -20,7 +20,6 @@ const invalidElmApp = msg => {
 
 const httpApi = ({
   app,
-  config = {},
   logger = defaultLogger,
   requestPort = 'requestPort',
   responsePort = 'responsePort',
