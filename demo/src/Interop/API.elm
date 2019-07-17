@@ -16,7 +16,7 @@ main =
         , initialModel = ()
         , requestPort = requestPort
         , responsePort = responsePort
-        , ports = [ ( respondRand, (Json.Decode.map RandomFloat Json.Decode.float |> Json.Decode.decodeValue) >> Result.withDefault (RandomFloat 0.0) ) ]
+        , ports = [ ( respondRand, Json.Decode.map RandomFloat Json.Decode.float ) ]
         , parseRoute =
             oneOf
                 [ map Unit (s "unit")

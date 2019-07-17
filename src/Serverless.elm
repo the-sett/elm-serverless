@@ -116,7 +116,7 @@ type alias HttpApi config model route msg =
     , update : msg -> Conn config model route -> ( Conn config model route, Cmd msg )
     , requestPort : RequestPort (Msg msg)
     , responsePort : ResponsePort (Msg msg)
-    , ports : List ( InteropPort (Msg msg), Json.Encode.Value -> msg )
+    , ports : List ( InteropPort (Msg msg), Decoder msg )
     }
 
 
@@ -216,7 +216,7 @@ noSideEffects _ conn =
             }
 
 -}
-noPorts : List ( InteropPort (Msg msg), Json.Encode.Value -> msg )
+noPorts : List ( InteropPort (Msg msg), Decoder msg )
 noPorts =
     []
 
@@ -234,6 +234,7 @@ type alias Model config model route =
 type Msg msg
     = RequestPortMsg IO
     | HandlerMsg Id msg
+    | HandlerDecodeErr Id Json.Decode.Error
 
 
 type SlsMsg config model route msg
@@ -297,6 +298,11 @@ toSlsMsg api configResult rawMsg =
 
         ( _, HandlerMsg id msg ) ->
             RequestUpdate id msg
+
+        ( _, HandlerDecodeErr id err ) ->
+            ProcessingError id 500 False <|
+                (++) "Misconfigured server. Make sure the elm-serverless npm package version matches the elm package version."
+                    (Json.Decode.errorToString err)
 
 
 update_ :
@@ -376,12 +382,17 @@ sub_ :
     -> Sub (Msg msg)
 sub_ api model =
     let
-        fnMap : (Json.Encode.Value -> msg) -> (IO -> Msg msg)
-        fnMap fn io =
-            HandlerMsg (Tuple.first io) (fn (Tuple.second io))
+        fnMap : Decoder msg -> (IO -> Msg msg)
+        fnMap decoder ( id, val ) =
+            case Json.Decode.decodeValue decoder val of
+                Ok msg ->
+                    HandlerMsg id msg
+
+                Err err ->
+                    HandlerDecodeErr id err
 
         interopSubs =
-            List.map (\( interopPort, handler ) -> interopPort (fnMap handler)) api.ports
+            List.map (\( interopPort, decoder ) -> interopPort (fnMap decoder)) api.ports
     in
     Sub.batch
         (api.requestPort RequestPortMsg
