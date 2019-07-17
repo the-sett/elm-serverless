@@ -216,7 +216,7 @@ noSideEffects _ conn =
             }
 
 -}
-noPorts : List (InteropPort (Msg msg))
+noPorts : List ( InteropPort (Msg msg), Json.Encode.Value -> msg )
 noPorts =
     []
 

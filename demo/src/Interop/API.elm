@@ -1,5 +1,6 @@
 port module Interop.API exposing (Conn, Msg(..), Route(..), endpoint, main, requestPort, responsePort, update)
 
+import Json.Decode
 import Json.Encode
 import Serverless
 import Serverless.Conn exposing (jsonBody, respond, route)
@@ -15,7 +16,7 @@ main =
         , initialModel = ()
         , requestPort = requestPort
         , responsePort = responsePort
-        , ports = Serverless.noPorts
+        , ports = [ ( respondRand, (Json.Decode.map RandomFloat Json.Decode.float |> Json.Decode.decodeValue) >> Result.withDefault (RandomFloat 0.0) ) ]
         , parseRoute =
             oneOf
                 [ map Unit (s "unit")
@@ -73,4 +74,4 @@ port responsePort : Serverless.ResponsePort msg
 port requestRand : () -> Cmd msg
 
 
-port respondRand : (Float -> msg) -> Sub msg
+port respondRand : Serverless.InteropPort msg
