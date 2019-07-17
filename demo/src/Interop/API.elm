@@ -20,10 +20,7 @@ main =
         -- Route /:lowerBound/:upperBound
         , parseRoute =
             oneOf
-                [ map NumberRange (int </> int)
-                , map (NumberRange 0) int
-                , map (NumberRange 0 1000000000) top
-                , map Unit (s "unit")
+                [ map Unit (s "unit")
                 ]
                 |> Url.Parser.parse
 
@@ -40,22 +37,12 @@ main =
 
 
 type Route
-    = NumberRange Int Int
-    | Unit
+    = Unit
 
 
 endpoint : Conn -> ( Conn, Cmd Msg )
 endpoint conn =
     case route conn of
-        NumberRange lower upper ->
-            ( -- Leave connection unmodified
-              conn
-            , -- Issues a command. The result will come into the update
-              -- function as the RandomNumber message
-              Random.generate RandomNumber <|
-                Random.int lower upper
-            )
-
         Unit ->
             ( conn
             , Random.generate RandomFloat <|
@@ -68,16 +55,12 @@ endpoint conn =
 
 
 type Msg
-    = RandomNumber Int
-    | RandomFloat Float
+    = RandomFloat Float
 
 
 update : Msg -> Conn -> ( Conn, Cmd Msg )
 update msg conn =
     case msg of
-        RandomNumber val ->
-            respond ( 200, jsonBody <| Json.Encode.int val ) conn
-
         RandomFloat val ->
             respond ( 200, jsonBody <| Json.Encode.float val ) conn
 
