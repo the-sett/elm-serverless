@@ -69,6 +69,18 @@ functions:
           path: /side-effects/{proxy+}
           method: ANY
 
+  interop:
+    handler: src/Interop/api.handler
+    events:
+      - http:
+          integration: lambda-proxy
+          path: /interop
+          method: ANY
+      - http:
+          integration: lambda-proxy
+          path: /interop/{proxy+}
+          method: ANY
+
   quoted:
     handler: src/Quoted/api.handler
     events:
