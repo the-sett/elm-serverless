@@ -16,7 +16,7 @@ main =
         , initialModel = ()
         , requestPort = requestPort
         , responsePort = responsePort
-        , ports = [ ( respondRand, Json.Decode.map RandomFloat Json.Decode.float ) ]
+        , interopPorts = [ ( respondRand, Json.Decode.map RandomFloat Json.Decode.float ) ]
         , parseRoute =
             oneOf
                 [ map Unit (s "unit")
@@ -69,6 +69,13 @@ port requestPort : Serverless.RequestPort msg
 
 
 port responsePort : Serverless.ResponsePort msg
+
+
+
+-- Sketching the helper function.
+-- interop : Conn -> RequestPort msg -> Cmd msg
+-- interop conn prt =
+--     Serverless.Conn.id conn |> prt
 
 
 port requestRand : Serverless.Conn.Id -> Cmd msg
