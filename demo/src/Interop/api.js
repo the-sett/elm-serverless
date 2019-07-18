@@ -8,7 +8,7 @@ const app = Elm.Interop.API.init();
 
 // Random numbers through a port.
 if (app.ports != null && app.ports.requestRand != null) {
-  app.ports.requestRand.subscribe(connectionId => {
+  app.ports.requestRand.subscribe((connectionId, arg) => {
     app.ports.respondRand.send([connectionId, Math.random()]);
   });
 }

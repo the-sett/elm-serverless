@@ -1,7 +1,8 @@
 module Serverless exposing
     ( httpApi, HttpApi, Program
-    , IO, RequestPort, ResponsePort, InteropRequestPort, InteropResponsePort
+    , IO, RequestPort, ResponsePort
     , noConfig, noRoutes, noSideEffects, noPorts
+    , InteropRequestPort, InteropResponsePort, interop
     )
 
 {-| Use `httpApi` to define a `Program` that responds to HTTP requests. Take a look
@@ -30,7 +31,7 @@ with the following signatures. See the
 [Hello World Demo](https://github.com/ktonon/elm-serverless/blob/master/demo/src/Hello)
 for a usage example.
 
-@docs IO, RequestPort, ResponsePort, InteropRequestPort, InteropResponsePort
+@docs IO, RequestPort, ResponsePort
 
 
 ## Initialization Helpers
@@ -39,6 +40,11 @@ Various aspects of Program may not be needed. These functions are provided as a
 convenient way to opt-out.
 
 @docs noConfig, noRoutes, noSideEffects, noPorts
+
+
+## Interop ports and helpers.
+
+@docs InteropRequestPort, InteropResponsePort, interop
 
 -}
 
@@ -122,18 +128,6 @@ type alias HttpApi config model route msg =
 
 type alias IO =
     ( String, Json.Encode.Value )
-
-
-{-| The type of all incoming interop ports.
--}
-type alias InteropResponsePort msg =
-    (IO -> msg) -> Sub msg
-
-
-{-| The type of all outgoing interop ports.
--}
-type alias InteropRequestPort a msg =
-    a -> String -> Cmd msg
 
 
 {-| Type of port through which the request is received.
@@ -404,6 +398,27 @@ sub_ api model =
         (api.requestPort RequestPortMsg
             :: interopSubs
         )
+
+
+
+-- JS Interop
+
+
+{-| The type of all incoming interop ports.
+-}
+type alias InteropResponsePort msg =
+    (IO -> msg) -> Sub msg
+
+
+{-| The type of all outgoing interop ports.
+-}
+type alias InteropRequestPort a msg =
+    ( String, a ) -> Cmd msg
+
+
+interop : InteropRequestPort a msg -> a -> Conn config model route -> Cmd msg
+interop interopPort arg conn =
+    interopPort ( Conn.id conn, arg )
 
 
 
