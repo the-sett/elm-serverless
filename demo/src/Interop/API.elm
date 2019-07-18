@@ -81,4 +81,4 @@ port responsePort : Serverless.ResponsePort msg
 port requestRand : Serverless.Conn.Id -> Cmd msg
 
 
-port respondRand : Serverless.InteropPort msg
+port respondRand : Serverless.InteropResponsePort msg

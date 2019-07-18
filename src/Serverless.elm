@@ -1,6 +1,6 @@
 module Serverless exposing
     ( httpApi, HttpApi, Program
-    , IO, RequestPort, ResponsePort, InteropPort
+    , IO, RequestPort, ResponsePort, InteropRequestPort, InteropResponsePort
     , noConfig, noRoutes, noSideEffects, noPorts
     )
 
@@ -30,7 +30,7 @@ with the following signatures. See the
 [Hello World Demo](https://github.com/ktonon/elm-serverless/blob/master/demo/src/Hello)
 for a usage example.
 
-@docs IO, RequestPort, ResponsePort, InteropPort
+@docs IO, RequestPort, ResponsePort, InteropRequestPort, InteropResponsePort
 
 
 ## Initialization Helpers
@@ -116,7 +116,7 @@ type alias HttpApi config model route msg =
     , update : msg -> Conn config model route -> ( Conn config model route, Cmd msg )
     , requestPort : RequestPort (Msg msg)
     , responsePort : ResponsePort (Msg msg)
-    , ports : List ( InteropPort (Msg msg), Decoder msg )
+    , interopPorts : List ( InteropResponsePort (Msg msg), Decoder msg )
     }
 
 
@@ -126,8 +126,14 @@ type alias IO =
 
 {-| The type of all incoming interop ports.
 -}
-type alias InteropPort msg =
+type alias InteropResponsePort msg =
     (IO -> msg) -> Sub msg
+
+
+{-| The type of all outgoing interop ports.
+-}
+type alias InteropRequestPort a msg =
+    a -> String -> Cmd msg
 
 
 {-| Type of port through which the request is received.
@@ -216,7 +222,7 @@ noSideEffects _ conn =
             }
 
 -}
-noPorts : List ( InteropPort (Msg msg), Decoder msg )
+noPorts : List ( InteropResponsePort (Msg msg), Decoder msg )
 noPorts =
     []
 
@@ -392,7 +398,7 @@ sub_ api model =
                     HandlerDecodeErr id err
 
         interopSubs =
-            List.map (\( interopPort, decoder ) -> interopPort (fnMap decoder)) api.ports
+            List.map (\( interopPort, decoder ) -> interopPort (fnMap decoder)) api.interopPorts
     in
     Sub.batch
         (api.requestPort RequestPortMsg

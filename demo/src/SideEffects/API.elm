@@ -16,7 +16,7 @@ main =
         , initialModel = ()
         , requestPort = requestPort
         , responsePort = responsePort
-        , ports = Serverless.noPorts
+        , interopPorts = Serverless.noPorts
 
         -- Route /:lowerBound/:upperBound
         , parseRoute =

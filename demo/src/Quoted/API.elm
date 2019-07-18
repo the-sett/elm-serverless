@@ -49,7 +49,7 @@ main =
         -- unique identifiers.
         , requestPort = requestPort
         , responsePort = responsePort
-        , ports = Serverless.noPorts
+        , interopPorts = Serverless.noPorts
         }
 
 
