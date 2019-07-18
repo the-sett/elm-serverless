@@ -17,6 +17,7 @@ main =
         , update = Serverless.noSideEffects
         , requestPort = requestPort
         , responsePort = responsePort
+        , interopPorts = Serverless.noPorts
 
         -- Decodes per instance configuration into Elm data. If decoding fails
         -- the server will return 500 for every request and log details about

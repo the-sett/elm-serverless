@@ -1,7 +1,8 @@
 module Serverless exposing
     ( httpApi, HttpApi, Program
-    , RequestPort, ResponsePort
-    , noConfig, noRoutes, noSideEffects
+    , IO, RequestPort, ResponsePort
+    , noConfig, noRoutes, noSideEffects, noPorts
+    , InteropRequestPort, InteropResponsePort, interop
     )
 
 {-| Use `httpApi` to define a `Program` that responds to HTTP requests. Take a look
@@ -30,7 +31,7 @@ with the following signatures. See the
 [Hello World Demo](https://github.com/ktonon/elm-serverless/blob/master/demo/src/Hello)
 for a usage example.
 
-@docs RequestPort, ResponsePort
+@docs IO, RequestPort, ResponsePort
 
 
 ## Initialization Helpers
@@ -38,7 +39,12 @@ for a usage example.
 Various aspects of Program may not be needed. These functions are provided as a
 convenient way to opt-out.
 
-@docs noConfig, noRoutes, noSideEffects
+@docs noConfig, noRoutes, noSideEffects, noPorts
+
+
+## Interop ports and helpers.
+
+@docs InteropRequestPort, InteropResponsePort, interop
 
 -}
 
@@ -116,6 +122,7 @@ type alias HttpApi config model route msg =
     , update : msg -> Conn config model route -> ( Conn config model route, Cmd msg )
     , requestPort : RequestPort (Msg msg)
     , responsePort : ResponsePort (Msg msg)
+    , interopPorts : List ( InteropResponsePort (Msg msg), Decoder msg )
     }
 
 
@@ -198,6 +205,22 @@ noSideEffects _ conn =
     ( conn, Cmd.none )
 
 
+{-| Opt-out of interop ports.
+
+    main : Serverless.Program config model route ()
+    main =
+        Serverless.httpApi
+            { ports = noPorts
+
+            -- ...
+            }
+
+-}
+noPorts : List ( InteropResponsePort (Msg msg), Decoder msg )
+noPorts =
+    []
+
+
 
 -- IMPLEMENTATION
 
@@ -211,6 +234,7 @@ type alias Model config model route =
 type Msg msg
     = RequestPortMsg IO
     | HandlerMsg Id msg
+    | HandlerDecodeErr Id Json.Decode.Error
 
 
 type SlsMsg config model route msg
@@ -274,6 +298,11 @@ toSlsMsg api configResult rawMsg =
 
         ( _, HandlerMsg id msg ) ->
             RequestUpdate id msg
+
+        ( _, HandlerDecodeErr id err ) ->
+            ProcessingError id 500 False <|
+                (++) "Failed to decode interop handler argument."
+                    (Json.Decode.errorToString err)
 
 
 update_ :
@@ -352,7 +381,44 @@ sub_ :
     -> Model config model route
     -> Sub (Msg msg)
 sub_ api model =
-    api.requestPort RequestPortMsg
+    let
+        fnMap : Decoder msg -> (IO -> Msg msg)
+        fnMap decoder ( id, val ) =
+            case Json.Decode.decodeValue decoder val of
+                Ok msg ->
+                    HandlerMsg id msg
+
+                Err err ->
+                    HandlerDecodeErr id err
+
+        interopSubs =
+            List.map (\( interopPort, decoder ) -> interopPort (fnMap decoder)) api.interopPorts
+    in
+    Sub.batch
+        (api.requestPort RequestPortMsg
+            :: interopSubs
+        )
+
+
+
+-- JS Interop
+
+
+{-| The type of all incoming interop ports.
+-}
+type alias InteropResponsePort msg =
+    (IO -> msg) -> Sub msg
+
+
+{-| The type of all outgoing interop ports.
+-}
+type alias InteropRequestPort a msg =
+    ( String, a ) -> Cmd msg
+
+
+interop : InteropRequestPort a msg -> a -> Conn config model route -> Cmd msg
+interop interopPort arg conn =
+    interopPort ( Conn.id conn, arg )
 
 
 

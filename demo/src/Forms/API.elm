@@ -19,6 +19,7 @@ main =
         , update = Serverless.noSideEffects
         , requestPort = requestPort
         , responsePort = responsePort
+        , interopPorts = Serverless.noPorts
 
         -- Entry point for new connections.
         , endpoint = endpoint

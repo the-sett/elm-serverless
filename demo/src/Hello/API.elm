@@ -17,6 +17,7 @@ main =
         , initialModel = ()
         , parseRoute = Serverless.noRoutes
         , update = Serverless.noSideEffects
+        , interopPorts = Serverless.noPorts
 
         -- Entry point for new connections.
         , endpoint = respond ( 200, textBody "Hello Elm on AWS Lambda" )

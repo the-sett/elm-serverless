@@ -23,6 +23,7 @@ main =
         , update = Serverless.noSideEffects
         , requestPort = requestPort
         , responsePort = responsePort
+        , interopPorts = Serverless.noPorts
 
         -- `Plug.apply` transforms the connection by passing it through each plug
         -- in a pipeline. After the pipeline is processed, the conn may already
