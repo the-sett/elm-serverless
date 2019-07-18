@@ -71,13 +71,6 @@ port requestPort : Serverless.RequestPort msg
 port responsePort : Serverless.ResponsePort msg
 
 
-
--- Sketching the helper function.
--- interop : Conn -> RequestPort msg -> Cmd msg
--- interop conn prt =
---     Serverless.Conn.id conn |> prt
-
-
 port requestRand : Serverless.InteropRequestPort () msg
 
 
