@@ -301,7 +301,7 @@ toSlsMsg api configResult rawMsg =
 
         ( _, HandlerDecodeErr id err ) ->
             ProcessingError id 500 False <|
-                (++) "Misconfigured server. Make sure the elm-serverless npm package version matches the elm package version."
+                (++) "Failed to decode interop handler argument."
                     (Json.Decode.errorToString err)
 
 
