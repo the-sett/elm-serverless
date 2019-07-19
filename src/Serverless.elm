@@ -126,6 +126,9 @@ type alias HttpApi config model route msg =
     }
 
 
+{-| Describes input and output events over ports as a connection id paired with
+a data value.
+-}
 type alias IO =
     ( String, Json.Encode.Value )
 
@@ -416,6 +419,15 @@ type alias InteropRequestPort a msg =
     ( String, a ) -> Cmd msg
 
 
+{-| Interop helper that invokes a port that follows the InteropRequestPort model.
+This helper function automatically passes the connection id to the port with the
+data. The connection id is needed if the port generates a response, in order to send
+the response to the correct connection.
+
+Note that it is possible to invoke any port, this is just a helper function for
+a default way of doing it.
+
+-}
 interop : InteropRequestPort a msg -> a -> Conn config model route -> Cmd msg
 interop interopPort arg conn =
     interopPort ( Conn.id conn, arg )
