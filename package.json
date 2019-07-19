@@ -1,6 +1,6 @@
 {
   "name": "@the-sett/serverless-elm-bridge",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "engines": {
     "node": ">=6.10.0"
   },
@@ -23,8 +23,7 @@
   },
   "dependencies": {
     "urlencode": "^1.1.0",
-    "uuid": "^3.1.0",
-    "xmlhttprequest": "git://github.com/ktonon/node-XMLHttpRequest.git#bdd9e5c75a3c0f8f4038697234e8612270cec799"
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
