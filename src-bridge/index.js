@@ -1,4 +1,4 @@
-const xmlhttprequest = require('xmlhttprequest');
+const xmlhttprequest = require('./xmlhttprequest');
 
 const defaultLogger = require('./logger');
 const Pool = require('./pool');
