@@ -45,7 +45,6 @@ loadQuotes lang conn =
               -- Here we make a request to another service...
               langs
                 |> List.map Quote.request
-                |> List.map Http.toTask
                 |> Task.sequence
                 |> Task.attempt GotQuotes
             )
