@@ -111,7 +111,7 @@ exports.XMLHttpRequest = function() {
   this.responseXML = "";
   this.status = null;
   this.statusText = null;
-  
+
   // Whether cross-site Access-Control requests should be made using
   // credentials such as cookies or authorization headers
   this.withCredentials = false;
@@ -447,6 +447,8 @@ exports.XMLHttpRequest = function() {
             setState(self.DONE);
             sendFlag = false;
           }
+
+          console.log("RESPONSE - " + response.statusCode + " " + self.responseText);
         });
 
         response.on("error", function(error) {
@@ -468,6 +470,8 @@ exports.XMLHttpRequest = function() {
       }
 
       request.end();
+
+      console.log(options.method + " - " + url.protocol + "//" + host + ":" + port + uri + "\n" + data);
 
       self.dispatchEvent("loadstart");
     } else { // Synchronous
@@ -525,6 +529,8 @@ exports.XMLHttpRequest = function() {
    * Called when an error is encountered to deal with it.
    */
   this.handleError = function(error) {
+    console.log('ERROR - ' + error);
+
     this.status = 0;
     this.statusText = error;
     this.responseText = error.stack;
