@@ -165,7 +165,7 @@ exports.XMLHttpRequest = function() {
     settings = {
       "method": method,
       "url": url.toString(),
-      "async": (typeof async !== "boolean" ? true : async),
+      "async": (typeof async !=="boolean" ? true : async),
       "user": user || null,
       "password": password || null
     };
@@ -212,12 +212,12 @@ exports.XMLHttpRequest = function() {
    * @return string Text of the header or null if it doesn't exist.
    */
   this.getResponseHeader = function(header) {
-    if (typeof header === "string"
-      && this.readyState > this.OPENED
-      && response
-      && response.headers
-      && response.headers[header.toLowerCase()]
-      && !errorFlag
+    if (typeof header === "string" &&
+      this.readyState > this.OPENED &&
+      response &&
+      response.headers &&
+      response.headers[header.toLowerCase()] &&
+      !errorFlag
     ) {
       return response.headers[header.toLowerCase()];
     }
@@ -273,7 +273,8 @@ exports.XMLHttpRequest = function() {
       throw new Error("INVALID_STATE_ERR: send has already been called");
     }
 
-    var ssl = false, local = false;
+    var ssl = false,
+      local = false;
     var url = Url.parse(settings.url);
     var host;
     // Determine the server
@@ -320,7 +321,7 @@ exports.XMLHttpRequest = function() {
           this.responseText = fs.readFileSync(url.pathname, "utf8");
           this.status = 200;
           setState(self.DONE);
-        } catch(e) {
+        } catch (e) {
           this.handleError(e);
         }
       }
@@ -448,7 +449,7 @@ exports.XMLHttpRequest = function() {
             sendFlag = false;
           }
 
-          console.log("RESPONSE - " + response.statusCode + " " + self.responseText);
+          self.logResponse(response);
         });
 
         response.on("error", function(error) {
@@ -471,7 +472,8 @@ exports.XMLHttpRequest = function() {
 
       request.end();
 
-      console.log(options.method + " - " + url.protocol + "//" + host + ":" + port + uri + "\n" + data);
+      self.logRequest(options, url, data, request);
+
 
       self.dispatchEvent("loadstart");
     } else { // Synchronous
@@ -480,32 +482,32 @@ exports.XMLHttpRequest = function() {
       var syncFile = ".node-xmlhttprequest-sync-" + process.pid;
       fs.writeFileSync(syncFile, "", "utf8");
       // The async request the other Node process executes
-      var execString = "var http = require('http'), https = require('https'), fs = require('fs');"
-        + "var doRequest = http" + (ssl ? "s" : "") + ".request;"
-        + "var options = " + JSON.stringify(options) + ";"
-        + "var responseText = '';"
-        + "var req = doRequest(options, function(response) {"
-        + "response.setEncoding('utf8');"
-        + "response.on('data', function(chunk) {"
-        + "  responseText += chunk;"
-        + "});"
-        + "response.on('end', function() {"
-        + "fs.writeFileSync('" + contentFile + "', JSON.stringify({err: null, data: {statusCode: response.statusCode, headers: response.headers, text: responseText}}), 'utf8');"
-        + "fs.unlinkSync('" + syncFile + "');"
-        + "});"
-        + "response.on('error', function(error) {"
-        + "fs.writeFileSync('" + contentFile + "', JSON.stringify({err: error}), 'utf8');"
-        + "fs.unlinkSync('" + syncFile + "');"
-        + "});"
-        + "}).on('error', function(error) {"
-        + "fs.writeFileSync('" + contentFile + "', JSON.stringify({err: error}), 'utf8');"
-        + "fs.unlinkSync('" + syncFile + "');"
-        + "});"
-        + (data ? "req.write('" + JSON.stringify(data).slice(1,-1).replace(/'/g, "\\'") + "');":"")
-        + "req.end();";
+      var execString = "var http = require('http'), https = require('https'), fs = require('fs');" +
+        "var doRequest = http" + (ssl ? "s" : "") + ".request;" +
+        "var options = " + JSON.stringify(options) + ";" +
+        "var responseText = '';" +
+        "var req = doRequest(options, function(response) {" +
+        "response.setEncoding('utf8');" +
+        "response.on('data', function(chunk) {" +
+        "  responseText += chunk;" +
+        "});" +
+        "response.on('end', function() {" +
+        "fs.writeFileSync('" + contentFile + "', JSON.stringify({err: null, data: {statusCode: response.statusCode, headers: response.headers, text: responseText}}), 'utf8');" +
+        "fs.unlinkSync('" + syncFile + "');" +
+        "});" +
+        "response.on('error', function(error) {" +
+        "fs.writeFileSync('" + contentFile + "', JSON.stringify({err: error}), 'utf8');" +
+        "fs.unlinkSync('" + syncFile + "');" +
+        "});" +
+        "}).on('error', function(error) {" +
+        "fs.writeFileSync('" + contentFile + "', JSON.stringify({err: error}), 'utf8');" +
+        "fs.unlinkSync('" + syncFile + "');" +
+        "});" +
+        (data ? "req.write('" + JSON.stringify(data).slice(1, -1).replace(/'/g, "\\'") + "');" : "") +
+        "req.end();";
       // Start the other Node Process, executing this string
       var syncProc = spawn(process.argv[0], ["-e", execString]);
-      while(fs.existsSync(syncFile)) {
+      while (fs.existsSync(syncFile)) {
         // Wait while the sync file is empty
       }
       var resp = JSON.parse(fs.readFileSync(contentFile, 'utf8'));
@@ -523,6 +525,31 @@ exports.XMLHttpRequest = function() {
         setState(self.DONE);
       }
     }
+  };
+
+  this.logRequest = function(options, url, data, request) {
+    var output =
+      "-- REQUEST -- " + url.protocol + "//" + options.host + ":" + options.port + options.path +
+      "\n" + request.output.toString() +
+      "\n-- -- -- --";
+
+    console.log(output);
+  };
+
+  this.logResponse = function(response) {
+    var headers = '';
+
+    Array.from(Object.keys(response.headers)).forEach(function(key) {
+      headers += key + ":" + response.headers[key] + "\n";
+    });
+
+    var output =
+      "-- RESPONSE -- " + response.statusCode + " " + response.statusMessage +
+      "\n" + headers +
+      "\n" + self.responseText +
+      "\n-- -- -- --";
+
+    console.log(output);
   };
 
   /**
@@ -555,9 +582,9 @@ exports.XMLHttpRequest = function() {
 
     errorFlag = true;
 
-    if (this.readyState !== this.UNSENT
-        && (this.readyState !== this.OPENED || sendFlag)
-        && this.readyState !== this.DONE) {
+    if (this.readyState !== this.UNSENT &&
+      (this.readyState !== this.OPENED || sendFlag) &&
+      this.readyState !== this.DONE) {
       sendFlag = false;
       setState(this.DONE);
     }
