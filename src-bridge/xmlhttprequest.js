@@ -529,9 +529,9 @@ exports.XMLHttpRequest = function() {
 
   this.logRequest = function(options, url, data, request) {
     var output =
-      "-- REQUEST -- " + url.protocol + "//" + options.host + ":" + options.port + options.path +
+      "\n--> REQUEST XMLHttpRequest -- " + url.protocol + "//" + options.host + ":" + options.port + options.path +
       "\n" + request.output.toString() +
-      "\n-- -- -- --";
+      "\n--> -- -- --";
 
     console.log(output);
   };
@@ -544,10 +544,10 @@ exports.XMLHttpRequest = function() {
     });
 
     var output =
-      "-- RESPONSE -- " + response.statusCode + " " + response.statusMessage +
+      "\n<-- RESPONSE XMLHttpRequest -- " + response.statusCode + " " + response.statusMessage +
       "\n" + headers +
       "\n" + self.responseText +
-      "\n-- -- -- --";
+      "\n<-- -- -- --";
 
     console.log(output);
   };
@@ -556,7 +556,7 @@ exports.XMLHttpRequest = function() {
    * Called when an error is encountered to deal with it.
    */
   this.handleError = function(error) {
-    console.log('ERROR - ' + error);
+    console.log("\n#-- ERROR XMLHttpRequest -- " + error);
 
     this.status = 0;
     this.statusText = error;
