@@ -110,7 +110,8 @@ exports.XMLHttpRequest = function() {
   this.responseText = "";
   this.responseXML = "";
   this.status = null;
-  this.statusText = null;
+  this.statusText = ""; // Setting to "" so is a valid Elm string.
+  this.responseURL = ""; // Setting to "" so is a valid Elm string.
 
   // Whether cross-site Access-Control requests should be made using
   // credentials such as cookies or authorization headers
@@ -644,9 +645,7 @@ exports.XMLHttpRequest = function() {
       }
 
       if (self.readyState === self.DONE && !errorFlag) {
-        if (self.responseType === 'text') {
-          self.response = self.responseText;
-        }
+        self.response = self.responseText;
         self.dispatchEvent("load");
         // @TODO figure out InspectorInstrumentation::didLoadXHR(cookie)
         self.dispatchEvent("loadend");
