@@ -39,7 +39,7 @@ module.exports = ({
     host,
     method,
     path: path(pathParameters || {}),
-    port: parseInt(headers['X-Forwarded-Port'] || port, 10),
+    port: parseInt(headers['X-Forwarded-Port'] || port || 80, 10), // Assume port 80, if none given.
     queryParams: queryStringParameters,
     queryString: `?${urlencode.stringify(queryStringParameters)}`,
     remoteIp: sourceIp || '127.0.0.1',
