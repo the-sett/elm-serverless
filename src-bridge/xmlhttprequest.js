@@ -450,7 +450,7 @@ exports.XMLHttpRequest = function() {
             sendFlag = false;
           }
 
-          self.logResponse(response);
+          //self.logResponse(response);
         });
 
         response.on("error", function(error) {
@@ -473,7 +473,7 @@ exports.XMLHttpRequest = function() {
 
       request.end();
 
-      self.logRequest(options, url, data, request);
+      //self.logRequest(options, url, data, request);
 
 
       self.dispatchEvent("loadstart");
@@ -528,36 +528,36 @@ exports.XMLHttpRequest = function() {
     }
   };
 
-  this.logRequest = function(options, url, data, request) {
-    var output =
-      "\n--> REQUEST XMLHttpRequest -- " + url.protocol + "//" + options.host + ":" + options.port + options.path +
-      "\n" + request.output.toString() +
-      "\n--> -- -- --";
+  // this.logRequest = function(options, url, data, request) {
+  //   var output =
+  //     "\n--> REQUEST XMLHttpRequest -- " + url.protocol + "//" + options.host + ":" + options.port + options.path +
+  //     "\n" + request.output.toString() +
+  //     "\n--> -- -- --";
+  //
+  //   console.log(output);
+  // };
 
-    console.log(output);
-  };
-
-  this.logResponse = function(response) {
-    var headers = '';
-
-    Array.from(Object.keys(response.headers)).forEach(function(key) {
-      headers += key + ":" + response.headers[key] + "\n";
-    });
-
-    var output =
-      "\n<-- RESPONSE XMLHttpRequest -- " + response.statusCode + " " + response.statusMessage +
-      "\n" + headers +
-      "\n" + self.responseText +
-      "\n<-- -- -- --";
-
-    console.log(output);
-  };
+  // this.logResponse = function(response) {
+  //   var headers = '';
+  //
+  //   Array.from(Object.keys(response.headers)).forEach(function(key) {
+  //     headers += key + ":" + response.headers[key] + "\n";
+  //   });
+  //
+  //   var output =
+  //     "\n<-- RESPONSE XMLHttpRequest -- " + response.statusCode + " " + response.statusMessage +
+  //     "\n" + headers +
+  //     "\n" + self.responseText +
+  //     "\n<-- -- -- --";
+  //
+  //   console.log(output);
+  // };
 
   /**
    * Called when an error is encountered to deal with it.
    */
   this.handleError = function(error) {
-    console.log("\n#-- ERROR XMLHttpRequest -- " + error);
+    //console.log("\n#-- ERROR XMLHttpRequest -- " + error);
 
     this.status = 0;
     this.statusText = error;
