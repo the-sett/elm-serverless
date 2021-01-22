@@ -1,7 +1,7 @@
 module Serverless.Conn.Request exposing
     ( Request, Method(..), Scheme(..)
     , url, method, path, queryString
-    , body, asText, asJson
+    , body
     , header, query, endpoint, stage, methodToString
     , init, decoder, methodDecoder, schemeDecoder
     )
@@ -37,7 +37,7 @@ Functions to access the request body and attempt a cast to a content type. See t
 [Forms Demo](https://github.com/ktonon/elm-serverless/blob/master/demo/src/Forms/API.elm)
 for an example.
 
-@docs body, asText, asJson
+@docs body
 
 
 ## Other Attributes
@@ -48,7 +48,8 @@ for an example.
 ## Misc
 
 These functions are typically not needed when building an application. They are
-used internally by the framework.
+used internally by the framework. They may be useful when debugging or writing
+unit tests.
 
 @docs init, decoder, methodDecoder, schemeDecoder
 
@@ -185,20 +186,6 @@ init =
 body : Request -> Body
 body (Request request) =
     request.body
-
-
-{-| Extract the String from the body.
--}
-asText : Body -> Result String String
-asText =
-    Body.asText
-
-
-{-| Extract the JSON value from the body.
--}
-asJson : Body -> Result String Json.Encode.Value
-asJson =
-    Body.asJson
 
 
 {-| Describes the server endpoint to which the request was made.

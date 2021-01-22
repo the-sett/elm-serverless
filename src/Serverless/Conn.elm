@@ -3,7 +3,6 @@ module Serverless.Conn exposing
     , config, model, updateModel
     , request, id, method, header, route
     , respond, updateResponse, send, toSent, unsent, mapUnsent
-    , textBody, jsonBody, binaryBody
     , init, jsonEncodedResponse
     )
 
@@ -41,18 +40,11 @@ Update the response and send it.
 @docs respond, updateResponse, send, toSent, unsent, mapUnsent
 
 
-## Response Body
-
-Use these constructors to create response bodies with different content types.
-
-@docs textBody, jsonBody, binaryBody
-
-
 ## Misc
 
 These functions are typically not needed when building an application. They are
-used internally by the framework. They are useful when debugging or writing unit
-tests.
+used internally by the framework. They may be useful when debugging or writing
+unit tests.
 
 @docs init, jsonEncodedResponse
 
@@ -270,31 +262,6 @@ mapUnsent func (Conn conn) =
 
         Unsent _ ->
             func (Conn conn)
-
-
-
--- BODY
-
-
-{-| A plain text body.
--}
-textBody : String -> Body
-textBody =
-    Body.text
-
-
-{-| A JSON body.
--}
-jsonBody : Json.Encode.Value -> Body
-jsonBody =
-    Body.json
-
-
-{-| A binary file.
--}
-binaryBody : String -> String -> Body
-binaryBody =
-    Body.binary
 
 
 

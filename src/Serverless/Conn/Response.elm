@@ -17,8 +17,8 @@ module Serverless.Conn.Response exposing
 ## Misc
 
 These functions are typically not needed when building an application. They are
-used internally by the framework. They are useful when debugging or writing unit
-tests.
+used internally by the framework. They may be useful when debugging or writing
+unit tests.
 
 @docs init, encode
 
