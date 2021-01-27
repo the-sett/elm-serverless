@@ -244,6 +244,7 @@ type Msg msg
 type SlsMsg config model route msg
     = RequestAdd (Conn config model route msg)
     | RequestUpdate Id msg
+    | RequestInteropResponse Id Int Value
     | ProcessingError Id Int Bool String
 
 
@@ -304,11 +305,7 @@ toSlsMsg api configResult rawMsg =
             RequestUpdate id msg
 
         ( _, InteropHandlerMsg id seqNo val ) ->
-            -- Look up the connection by id.
-            -- Find the message builder by seq no.
-            -- Build the message.
-            -- Clean up the sequence number.
-            Debug.todo "InteropHandlerMsg"
+            RequestInteropResponse id seqNo val
 
         ( _, HandlerDecodeErr id err ) ->
             ProcessingError id 500 False <|
@@ -330,6 +327,9 @@ update_ api rawMsg model =
 
         RequestUpdate connId msg ->
             updateChild api connId msg model
+
+        RequestInteropResponse connId seqNo val ->
+            updateChildForInteropResponse api connId seqNo val model
 
         ProcessingError connId status secret err ->
             let
@@ -353,6 +353,29 @@ updateChild api connId msg model =
     case ConnPool.get connId model.pool of
         Just conn ->
             updateChildHelper api (api.update msg conn) model
+
+        _ ->
+            ( model
+            , send api connId 500 <|
+                (++) "No connection in pool with id: " connId
+            )
+
+
+updateChildForInteropResponse :
+    HttpApi config model route msg
+    -> Id
+    -> Int
+    -> Value
+    -> Model config model route msg
+    -> ( Model config model route msg, Cmd (Msg msg) )
+updateChildForInteropResponse api connId seqNo val model =
+    case ConnPool.get connId model.pool of
+        Just conn ->
+            -- Find the message builder by seq no.
+            -- Build the message.
+            -- Clean up the sequence number.
+            --updateChildHelper api (api.update msg conn) model
+            Debug.todo "Build msg from interop context."
 
         _ ->
             ( model
