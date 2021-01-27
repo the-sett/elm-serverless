@@ -4,6 +4,7 @@ module Serverless.Conn exposing
     , request, id, method, header, route
     , respond, updateResponse, send, toSent, unsent, mapUnsent
     , init, jsonEncodedResponse
+    , interopContext
     )
 
 {-| Functions for querying and updating connections.
@@ -50,7 +51,8 @@ unit tests.
 
 -}
 
-import Json.Encode
+import Dict exposing (Dict)
+import Json.Encode exposing (Value)
 import Serverless.Conn.Body as Body exposing (Body)
 import Serverless.Conn.Request as Request exposing (Method, Request)
 import Serverless.Conn.Response as Response exposing (Response, Status, setBody, setStatus)
@@ -63,8 +65,8 @@ specific to the application. Config is loaded once on app startup, while model
 is set to a provided initial value for each incomming request.
 
 -}
-type Conn config model route
-    = Conn (Impl config model route)
+type Conn config model route msg
+    = Conn (Impl config model route msg)
 
 
 {-| Universally unique connection identifier.
@@ -73,13 +75,15 @@ type alias Id =
     String
 
 
-type alias Impl config model route =
+type alias Impl config model route msg =
     { id : Id
     , config : config
     , req : Request
     , resp : Sendable Response
     , model : model
     , route : route
+    , interopSeqNo : Int
+    , interopContext : Dict Int (Value -> msg)
     }
 
 
@@ -94,21 +98,21 @@ type Sendable a
 
 {-| Application defined configuration
 -}
-config : Conn config model route -> config
+config : Conn config model route msg -> config
 config (Conn conn) =
     conn.config
 
 
 {-| Application defined model
 -}
-model : Conn config model route -> model
+model : Conn config model route msg -> model
 model (Conn conn) =
     conn.model
 
 
 {-| Transform and update the application defined model stored in the connection.
 -}
-updateModel : (model -> model) -> Conn config model route -> Conn config model route
+updateModel : (model -> model) -> Conn config model route msg -> Conn config model route msg
 updateModel update (Conn conn) =
     Conn { conn | model = update conn.model }
 
@@ -119,28 +123,28 @@ updateModel update (Conn conn) =
 
 {-| Request
 -}
-request : Conn config model route -> Request
+request : Conn config model route msg -> Request
 request (Conn { req }) =
     req
 
 
 {-| Get a request header by name
 -}
-header : String -> Conn config model route -> Maybe String
+header : String -> Conn config model route msg -> Maybe String
 header key (Conn { req }) =
     Request.header key req
 
 
 {-| Request HTTP method
 -}
-method : Conn config model route -> Method
+method : Conn config model route msg -> Method
 method =
     request >> Request.method
 
 
 {-| Parsed route
 -}
-route : Conn config model route -> route
+route : Conn config model route msg -> route
 route (Conn conn) =
     conn.route
 
@@ -165,8 +169,8 @@ route (Conn conn) =
 -}
 respond :
     ( Status, Body )
-    -> Conn config model route
-    -> ( Conn config model route, Cmd msg )
+    -> Conn config model route msg
+    -> ( Conn config model route msg, Cmd msg )
 respond ( status, body ) =
     updateResponse
         (setStatus status >> setBody body)
@@ -189,8 +193,8 @@ Does not do anything if the response has already been sent.
 -}
 updateResponse :
     (Response -> Response)
-    -> Conn config model route
-    -> Conn config model route
+    -> Conn config model route msg
+    -> Conn config model route msg
 updateResponse updater (Conn conn) =
     Conn <|
         case conn.resp of
@@ -204,8 +208,8 @@ updateResponse updater (Conn conn) =
 {-| Sends a connection response through the given port
 -}
 send :
-    Conn config model route
-    -> ( Conn config model route, Cmd msg )
+    Conn config model route msg
+    -> ( Conn config model route msg, Cmd msg )
 send conn =
     ( toSent conn, Cmd.none )
 
@@ -225,8 +229,8 @@ function is intended to be used by middleware, which cannot issue side-effects.
 
 -}
 toSent :
-    Conn config model route
-    -> Conn config model route
+    Conn config model route msg
+    -> Conn config model route msg
 toSent (Conn conn) =
     case conn.resp of
         Unsent resp ->
@@ -239,7 +243,7 @@ toSent (Conn conn) =
 
 {-| Return `Just` the same can if it has not been sent yet.
 -}
-unsent : Conn config model route -> Maybe (Conn config model route)
+unsent : Conn config model route msg -> Maybe (Conn config model route msg)
 unsent (Conn conn) =
     case conn.resp of
         Sent _ ->
@@ -252,9 +256,9 @@ unsent (Conn conn) =
 {-| Apply an update function to a conn, but only if the conn is unsent.
 -}
 mapUnsent :
-    (Conn config model route -> ( Conn config model route, Cmd msg ))
-    -> Conn config model route
-    -> ( Conn config model route, Cmd msg )
+    (Conn config model route msg -> ( Conn config model route msg, Cmd msg ))
+    -> Conn config model route msg
+    -> ( Conn config model route msg, Cmd msg )
 mapUnsent func (Conn conn) =
     case conn.resp of
         Sent _ ->
@@ -270,24 +274,40 @@ mapUnsent func (Conn conn) =
 
 {-| Universally unique Conn identifier
 -}
-id : Conn config model route -> Id
+id : Conn config model route msg -> Id
 id (Conn conn) =
     conn.id
 
 
+interopContext : (Value -> msg) -> Conn config model route msg -> ( Int, Conn config model route msg )
+interopContext msgFn (Conn conn) =
+    let
+        nextSeqNo =
+            conn.interopSeqNo + 1
+    in
+    ( nextSeqNo
+    , { conn
+        | interopSeqNo = nextSeqNo
+        , interopContext = Dict.insert nextSeqNo msgFn conn.interopContext
+      }
+        |> Conn
+    )
+
+
 {-| Initialize a new Conn.
 -}
-init : Id -> config -> model -> route -> Request -> Conn config model route
+init : Id -> config -> model -> route -> Request -> Conn config model route msg
 init givenId givenConfig givenModel givenRoute req =
     Conn
-        (Impl
-            givenId
-            givenConfig
-            req
-            (Unsent Response.init)
-            givenModel
-            givenRoute
-        )
+        { id = givenId
+        , config = givenConfig
+        , req = req
+        , resp = Unsent Response.init
+        , model = givenModel
+        , route = givenRoute
+        , interopSeqNo = 0
+        , interopContext = Dict.empty
+        }
 
 
 {-| Response as JSON encoded to a string.
@@ -295,7 +315,7 @@ init givenId givenConfig givenModel givenRoute req =
 This is the format the response takes when it gets sent through the response port.
 
 -}
-jsonEncodedResponse : Conn config model route -> Json.Encode.Value
+jsonEncodedResponse : Conn config model route msg -> Json.Encode.Value
 jsonEncodedResponse (Conn conn) =
     case conn.resp of
         Unsent resp ->
