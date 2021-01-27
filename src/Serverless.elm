@@ -237,6 +237,7 @@ type alias Model config model route msg =
 type Msg msg
     = RequestPortMsg IO
     | HandlerMsg Id msg
+    | InteropHandlerMsg Id Int Value
     | HandlerDecodeErr Id Json.Decode.Error
 
 
@@ -301,6 +302,13 @@ toSlsMsg api configResult rawMsg =
 
         ( _, HandlerMsg id msg ) ->
             RequestUpdate id msg
+
+        ( _, InteropHandlerMsg id seqNo val ) ->
+            -- Look up the connection by id.
+            -- Find the message builder by seq no.
+            -- Build the message.
+            -- Clean up the sequence number.
+            Debug.todo "InteropHandlerMsg"
 
         ( _, HandlerDecodeErr id err ) ->
             ProcessingError id 500 False <|
@@ -385,26 +393,10 @@ sub_ :
     -> Sub (Msg msg)
 sub_ api model =
     let
-        -- fnMap : (Value -> msg) -> (IO -> Msg msg)
-        -- fnMap msgFn ( id, val ) =
-        --     HandlerMsg id (msgFn val)
         responseMap : InteropResponsePort (Msg msg) -> Sub (Msg msg)
         responseMap interopResponsePort =
-            interopResponsePort
-                (\( id, interopSeqNo, val ) ->
-                    let
-                        _ =
-                            Debug.todo "lookup"
+            interopResponsePort (\( id, interopSeqNo, val ) -> InteropHandlerMsg id interopSeqNo val)
 
-                        -- Find the connection by id
-                        -- Find the interop context by seq no
-                        -- Find the response message builder function
-                        -- Use the function to make a message
-                    in
-                    HandlerMsg id (Debug.todo "msg")
-                )
-
-        --interopSubs : List ((( String, Int, Value ) -> Msg msg) -> Sub (Msg msg))
         interopSubs : List (Sub (Msg msg))
         interopSubs =
             List.map (\interopPort -> responseMap interopPort) api.interopPorts
