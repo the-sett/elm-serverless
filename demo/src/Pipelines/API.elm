@@ -4,6 +4,7 @@ import Json.Decode exposing (succeed)
 import Json.Decode.Pipeline exposing (required)
 import Serverless
 import Serverless.Conn exposing (..)
+import Serverless.Conn.Body as Body
 import Serverless.Conn.Response exposing (addHeader, setBody, setStatus)
 import Serverless.Cors
 import Serverless.Plug as Plug exposing (Plug, plug)
@@ -34,7 +35,7 @@ main =
         -- conn is immutable.
         , endpoint =
             Plug.apply pipeline
-                >> mapUnsent (respond ( 200, textBody "Pipeline applied" ))
+                >> mapUnsent (respond ( 200, Body.text "Pipeline applied" ))
 
         -- Some middleware may provide a configuration decoder.
         , configDecoder =
@@ -49,7 +50,7 @@ type alias Config =
     { cors : Serverless.Cors.Config }
 
 
-pipeline : Plug Config () ()
+pipeline : Plug Config () () ()
 pipeline =
     Plug.pipeline
         -- Each plug in a pipeline transforms the connection
@@ -69,7 +70,7 @@ This can be done with the `toSent` function, which will make the conn immutable.
 point the conn becomes "sent".
 
 -}
-authMiddleware : Conn Config () () -> Conn Config () ()
+authMiddleware : Conn Config () () () -> Conn Config () () ()
 authMiddleware conn =
     case header "authorization" conn of
         Just _ ->
@@ -79,7 +80,7 @@ authMiddleware conn =
         Nothing ->
             let
                 body =
-                    textBody <|
+                    Body.text <|
                         "Unauthorized: Set an Authorization header using curl "
                             ++ "or postman (value does not matter)"
             in

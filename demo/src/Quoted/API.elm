@@ -7,7 +7,8 @@ import Quoted.Route exposing (Route(..), queryEncoder)
 import Quoted.Types exposing (Config, Conn, Msg(..), Plug, configDecoder, requestPort, responsePort)
 import Random
 import Serverless
-import Serverless.Conn exposing (jsonBody, mapUnsent, method, respond, route, textBody, updateResponse)
+import Serverless.Conn exposing (mapUnsent, method, respond, route, updateResponse)
+import Serverless.Conn.Body as Body
 import Serverless.Conn.Request exposing (Method(..))
 import Serverless.Plug as Plug exposing (plug)
 import Url.Parser
@@ -82,7 +83,7 @@ router conn =
         )
     of
         ( GET, Home query ) ->
-            respond ( 200, textBody <| (++) "Home: " <| Encode.encode 0 (queryEncoder query) ) conn
+            respond ( 200, Body.text <| (++) "Home: " <| Encode.encode 0 (queryEncoder query) ) conn
 
         ( _, Quote lang ) ->
             -- Delegate to Pipeline/Quote module.
@@ -95,10 +96,10 @@ router conn =
             )
 
         ( GET, Buggy ) ->
-            respond ( 500, textBody "bugs, bugs, bugs" ) conn
+            respond ( 500, Body.text "bugs, bugs, bugs" ) conn
 
         _ ->
-            respond ( 405, textBody "Method not allowed" ) conn
+            respond ( 405, Body.text "Method not allowed" ) conn
 
 
 {-| The application update function.
@@ -115,4 +116,4 @@ update msg conn =
             Quote.gotQuotes result conn
 
         RandomNumber val ->
-            respond ( 200, jsonBody <| Encode.int val ) conn
+            respond ( 200, Body.json <| Encode.int val ) conn

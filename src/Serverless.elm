@@ -49,7 +49,7 @@ convenient way to opt-out.
 -}
 
 import Json.Decode exposing (Decoder, decodeValue)
-import Json.Encode
+import Json.Encode exposing (Value)
 import Serverless.Conn as Conn exposing (Conn, Id)
 import Serverless.Conn.Body as Body
 import Serverless.Conn.Pool as ConnPool
@@ -65,7 +65,7 @@ This maps to a headless elm
 
 -}
 type alias Program config model route msg =
-    Platform.Program Flags (Model config model route) (Msg msg)
+    Platform.Program Flags (Model config model route msg) (Msg msg)
 
 
 {-| Type of flags for program.
@@ -110,7 +110,7 @@ You must provide the following:
   - `endpoint` is a function which receives incoming connections
   - `update` the app update function
 
-Notices that `update` and `endpoint` operate on `Conn config model route`
+Notices that `update` and `endpoint` operate on `Conn config model route msg`
 and not just on `model`.
 
 -}
@@ -118,11 +118,11 @@ type alias HttpApi config model route msg =
     { configDecoder : Decoder config
     , initialModel : model
     , parseRoute : Url -> Maybe route
-    , endpoint : Conn config model route -> ( Conn config model route, Cmd msg )
-    , update : msg -> Conn config model route -> ( Conn config model route, Cmd msg )
+    , endpoint : Conn config model route msg -> ( Conn config model route msg, Cmd msg )
+    , update : msg -> Conn config model route msg -> ( Conn config model route msg, Cmd msg )
     , requestPort : RequestPort (Msg msg)
     , responsePort : ResponsePort (Msg msg)
-    , interopPorts : List ( InteropResponsePort (Msg msg), Decoder msg )
+    , interopPorts : List (InteropResponsePort (Msg msg))
     }
 
 
@@ -202,8 +202,8 @@ noRoutes _ =
 -}
 noSideEffects :
     ()
-    -> Conn config model route
-    -> ( Conn config model route, Cmd () )
+    -> Conn config model route msg
+    -> ( Conn config model route msg, Cmd () )
 noSideEffects _ conn =
     ( conn, Cmd.none )
 
@@ -219,7 +219,7 @@ noSideEffects _ conn =
             }
 
 -}
-noPorts : List ( InteropResponsePort (Msg msg), Decoder msg )
+noPorts : List (InteropResponsePort (Msg msg))
 noPorts =
     []
 
@@ -228,8 +228,8 @@ noPorts =
 -- IMPLEMENTATION
 
 
-type alias Model config model route =
-    { pool : ConnPool.Pool config model route
+type alias Model config model route msg =
+    { pool : ConnPool.Pool config model route msg
     , configResult : Result String config
     }
 
@@ -237,19 +237,21 @@ type alias Model config model route =
 type Msg msg
     = RequestPortMsg IO
     | HandlerMsg Id msg
+    | InteropHandlerMsg Id Int Value
     | HandlerDecodeErr Id Json.Decode.Error
 
 
 type SlsMsg config model route msg
-    = RequestAdd (Conn config model route)
+    = RequestAdd (Conn config model route msg)
     | RequestUpdate Id msg
+    | RequestInteropResponse Id Int Value
     | ProcessingError Id Int Bool String
 
 
 init_ :
     HttpApi config model route msg
     -> Flags
-    -> ( Model config model route, Cmd (Msg msg) )
+    -> ( Model config model route msg, Cmd (Msg msg) )
 init_ api flags =
     case decodeValue api.configDecoder flags of
         Ok config ->
@@ -302,6 +304,9 @@ toSlsMsg api configResult rawMsg =
         ( _, HandlerMsg id msg ) ->
             RequestUpdate id msg
 
+        ( _, InteropHandlerMsg id seqNo val ) ->
+            RequestInteropResponse id seqNo val
+
         ( _, HandlerDecodeErr id err ) ->
             ProcessingError id 500 False <|
                 (++) "Failed to decode interop handler argument."
@@ -311,8 +316,8 @@ toSlsMsg api configResult rawMsg =
 update_ :
     HttpApi config model route msg
     -> Msg msg
-    -> Model config model route
-    -> ( Model config model route, Cmd (Msg msg) )
+    -> Model config model route msg
+    -> ( Model config model route msg, Cmd (Msg msg) )
 update_ api rawMsg model =
     case toSlsMsg api model.configResult rawMsg of
         RequestAdd conn ->
@@ -322,6 +327,9 @@ update_ api rawMsg model =
 
         RequestUpdate connId msg ->
             updateChild api connId msg model
+
+        RequestInteropResponse connId seqNo val ->
+            updateChildForInteropResponse api connId seqNo val model
 
         ProcessingError connId status secret err ->
             let
@@ -339,8 +347,8 @@ updateChild :
     HttpApi config model route msg
     -> Id
     -> msg
-    -> Model config model route
-    -> ( Model config model route, Cmd (Msg msg) )
+    -> Model config model route msg
+    -> ( Model config model route msg, Cmd (Msg msg) )
 updateChild api connId msg model =
     case ConnPool.get connId model.pool of
         Just conn ->
@@ -353,11 +361,49 @@ updateChild api connId msg model =
             )
 
 
+updateChildForInteropResponse :
+    HttpApi config model route msg
+    -> Id
+    -> Int
+    -> Value
+    -> Model config model route msg
+    -> ( Model config model route msg, Cmd (Msg msg) )
+updateChildForInteropResponse api connId seqNo val model =
+    case ConnPool.get connId model.pool of
+        Just conn ->
+            let
+                -- Find the message builder by seq no.
+                -- Clean up the sequence number on the connection.
+                ( maybeMsgBuilder, newConn ) =
+                    Conn.consumeInteropContext seqNo conn
+            in
+            case maybeMsgBuilder of
+                Just msgBuilder ->
+                    -- Run `update` on the connection with the message.
+                    updateChildHelper api (api.update (msgBuilder val) newConn) model
+
+                Nothing ->
+                    ( model
+                    , send api connId 500 <|
+                        "No message builder for interop seqNo "
+                            ++ String.fromInt seqNo
+                            ++ " on pool with id: "
+                            ++ connId
+                    )
+
+        _ ->
+            ( model
+            , send api connId 500 <|
+                "No connection in pool with id: "
+                    ++ connId
+            )
+
+
 updateChildHelper :
     HttpApi config model route msg
-    -> ( Conn config model route, Cmd msg )
-    -> Model config model route
-    -> ( Model config model route, Cmd (Msg msg) )
+    -> ( Conn config model route msg, Cmd msg )
+    -> Model config model route msg
+    -> ( Model config model route msg, Cmd (Msg msg) )
 updateChildHelper api ( conn, cmd ) model =
     case Conn.unsent conn of
         Nothing ->
@@ -381,21 +427,17 @@ updateChildHelper api ( conn, cmd ) model =
 
 sub_ :
     HttpApi config model route msg
-    -> Model config model route
+    -> Model config model route msg
     -> Sub (Msg msg)
 sub_ api model =
     let
-        fnMap : Decoder msg -> (IO -> Msg msg)
-        fnMap decoder ( id, val ) =
-            case Json.Decode.decodeValue decoder val of
-                Ok msg ->
-                    HandlerMsg id msg
+        responseMap : InteropResponsePort (Msg msg) -> Sub (Msg msg)
+        responseMap interopResponsePort =
+            interopResponsePort (\( id, interopSeqNo, val ) -> InteropHandlerMsg id interopSeqNo val)
 
-                Err err ->
-                    HandlerDecodeErr id err
-
+        interopSubs : List (Sub (Msg msg))
         interopSubs =
-            List.map (\( interopPort, decoder ) -> interopPort (fnMap decoder)) api.interopPorts
+            List.map (\interopPort -> responseMap interopPort) api.interopPorts
     in
     Sub.batch
         (api.requestPort RequestPortMsg
@@ -410,13 +452,13 @@ sub_ api model =
 {-| The type of all incoming interop ports.
 -}
 type alias InteropResponsePort msg =
-    (IO -> msg) -> Sub msg
+    (( String, Int, Json.Encode.Value ) -> msg) -> Sub msg
 
 
 {-| The type of all outgoing interop ports.
 -}
 type alias InteropRequestPort a msg =
-    ( String, a ) -> Cmd msg
+    ( String, Int, a ) -> Cmd msg
 
 
 {-| Interop helper that invokes a port that follows the InteropRequestPort model.
@@ -428,9 +470,15 @@ Note that it is possible to invoke any port, this is just a helper function for
 a default way of doing it.
 
 -}
-interop : InteropRequestPort a msg -> a -> Conn config model route -> Cmd msg
-interop interopPort arg conn =
-    interopPort ( Conn.id conn, arg )
+interop : InteropRequestPort a msg -> a -> (Value -> msg) -> Conn config model route msg -> ( Conn config model route msg, Cmd msg )
+interop interopPort arg responseFn conn =
+    let
+        ( interopSeqNo, connWithContext ) =
+            Conn.createInteropContext responseFn conn
+    in
+    ( connWithContext
+    , interopPort ( Conn.id conn, interopSeqNo, arg )
+    )
 
 
 

@@ -4,7 +4,8 @@ import Http
 import Quoted.Models.Quote as Quote
 import Quoted.Route exposing (..)
 import Quoted.Types exposing (Conn, Msg(..), responsePort)
-import Serverless.Conn as Conn exposing (jsonBody, method, respond, textBody, updateResponse)
+import Serverless.Conn as Conn exposing (method, respond, updateResponse)
+import Serverless.Conn.Body as Body
 import Serverless.Conn.Request as Request exposing (Method(..))
 import Task
 
@@ -18,14 +19,14 @@ router lang conn =
         POST ->
             respond
                 ( 501
-                , textBody <|
+                , Body.text <|
                     "Not implemented, but I got this body: "
                   --  ++ (conn |> Conn.request |> Request.body |> toString)
                 )
                 conn
 
         _ ->
-            respond ( 405, textBody "Method not allowed" ) conn
+            respond ( 405, Body.text "Method not allowed" ) conn
 
 
 loadQuotes : Quoted.Route.Lang -> Conn -> ( Conn, Cmd Msg )
@@ -37,7 +38,7 @@ loadQuotes lang conn =
             |> langFilter lang
     of
         [] ->
-            respond ( 404, textBody "Could not find language" ) conn
+            respond ( 404, Body.text "Could not find language" ) conn
 
         langs ->
             ( conn
@@ -60,13 +61,13 @@ gotQuotes result conn =
                 , q
                     |> List.sortBy .lang
                     |> Quote.encodeList
-                    |> jsonBody
+                    |> Body.json
                 )
                 conn
 
         Err err ->
-            --respond ( 500, textBody <| toString err ) conn
-            respond ( 500, textBody <| "HTTP Error" ) conn
+            --respond ( 500, Body.text <| toString err ) conn
+            respond ( 500, Body.text <| "HTTP Error" ) conn
 
 
 

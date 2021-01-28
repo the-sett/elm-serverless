@@ -4,7 +4,8 @@ import Json.Decode exposing (Decoder, andThen, fail, int, map, string, succeed)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Serverless
-import Serverless.Conn exposing (config, respond, textBody)
+import Serverless.Conn exposing (config, respond)
+import Serverless.Conn.Body as Body
 
 
 {-| Shows how to load per-instance configuration.
@@ -30,7 +31,7 @@ main =
             \conn ->
                 respond
                     ( 200
-                    , textBody <| (++) "Config: " <| configToString (config conn)
+                    , Body.text <| (++) "Config: " <| configToString (config conn)
                     )
                     conn
         }
