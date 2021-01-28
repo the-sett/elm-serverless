@@ -4,7 +4,7 @@ module Serverless.Conn exposing
     , request, id, method, header, route
     , respond, updateResponse, send, toSent, unsent, mapUnsent
     , init, jsonEncodedResponse
-    , interopContext
+    , consumeInteropContext, createInteropContext
     )
 
 {-| Functions for querying and updating connections.
@@ -279,8 +279,16 @@ id (Conn conn) =
     conn.id
 
 
-interopContext : (Value -> msg) -> Conn config model route msg -> ( Int, Conn config model route msg )
-interopContext msgFn (Conn conn) =
+consumeInteropContext : Int -> Conn config model route msg -> ( Maybe (Value -> msg), Conn config model route msg )
+consumeInteropContext seqNo (Conn conn) =
+    ( Dict.get seqNo conn.interopContext
+    , { conn | interopContext = Dict.remove seqNo conn.interopContext }
+        |> Conn
+    )
+
+
+createInteropContext : (Value -> msg) -> Conn config model route msg -> ( Int, Conn config model route msg )
+createInteropContext msgFn (Conn conn) =
     let
         nextSeqNo =
             conn.interopSeqNo + 1

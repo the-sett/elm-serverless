@@ -371,16 +371,31 @@ updateChildForInteropResponse :
 updateChildForInteropResponse api connId seqNo val model =
     case ConnPool.get connId model.pool of
         Just conn ->
-            -- Find the message builder by seq no.
-            -- Build the message.
-            -- Clean up the sequence number.
-            --updateChildHelper api (api.update msg conn) model
-            Debug.todo "Build msg from interop context."
+            let
+                -- Find the message builder by seq no.
+                -- Clean up the sequence number on the connection.
+                ( maybeMsgBuilder, newConn ) =
+                    Conn.consumeInteropContext seqNo conn
+            in
+            case maybeMsgBuilder of
+                Just msgBuilder ->
+                    -- Run `update` on the connection with the message.
+                    updateChildHelper api (api.update (msgBuilder val) newConn) model
+
+                Nothing ->
+                    ( model
+                    , send api connId 500 <|
+                        "No message builder for interop seqNo "
+                            ++ String.fromInt seqNo
+                            ++ " on pool with id: "
+                            ++ connId
+                    )
 
         _ ->
             ( model
             , send api connId 500 <|
-                (++) "No connection in pool with id: " connId
+                "No connection in pool with id: "
+                    ++ connId
             )
 
 
@@ -459,7 +474,7 @@ interop : InteropRequestPort a msg -> a -> (Value -> msg) -> Conn config model r
 interop interopPort arg responseFn conn =
     let
         ( interopSeqNo, connWithContext ) =
-            Conn.interopContext responseFn conn
+            Conn.createInteropContext responseFn conn
     in
     ( connWithContext
     , interopPort ( Conn.id conn, interopSeqNo, arg )
