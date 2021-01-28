@@ -1,7 +1,8 @@
 port module Routing.API exposing (Conn, Route(..), main, requestPort, responsePort, router)
 
 import Serverless
-import Serverless.Conn exposing (method, respond, route, textBody)
+import Serverless.Conn exposing (method, respond, route)
+import Serverless.Conn.Body as Body
 import Serverless.Conn.Request exposing (Method(..))
 import Url
 import Url.Parser exposing ((</>), map, oneOf, s, string, top)
@@ -66,26 +67,26 @@ Remember that route is the request path and query string, already parsed into
 nice Elm data, courtesy of the parseRoute function provided above.
 
 -}
-router : Conn -> ( Conn, Cmd msg )
+router : Conn -> ( Conn, Cmd () )
 router conn =
     case ( method conn, route conn ) of
         ( GET, Home ) ->
-            respond ( 200, textBody "The home page" ) conn
+            respond ( 200, Body.text "The home page" ) conn
 
         ( GET, BlogList ) ->
-            respond ( 200, textBody "List of recent posts..." ) conn
+            respond ( 200, Body.text "List of recent posts..." ) conn
 
         ( GET, Blog slug ) ->
-            respond ( 200, textBody <| (++) "Specific post: " slug ) conn
+            respond ( 200, Body.text <| (++) "Specific post: " slug ) conn
 
         _ ->
-            respond ( 405, textBody "Method not allowed" ) conn
+            respond ( 405, Body.text "Method not allowed" ) conn
 
 
 {-| For convenience we defined our own Conn with arguments to the type parameters
 -}
 type alias Conn =
-    Serverless.Conn.Conn () () Route
+    Serverless.Conn.Conn () () Route ()
 
 
 port requestPort : Serverless.RequestPort msg

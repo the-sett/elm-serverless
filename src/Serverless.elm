@@ -219,7 +219,7 @@ noSideEffects _ conn =
             }
 
 -}
-noPorts : List ( InteropResponsePort (Msg msg), Decoder msg )
+noPorts : List (InteropResponsePort (Msg msg))
 noPorts =
     []
 

@@ -1,7 +1,8 @@
 port module Hello.API exposing (main)
 
 import Serverless
-import Serverless.Conn exposing (respond, textBody)
+import Serverless.Conn exposing (respond)
+import Serverless.Conn.Body as Body
 
 
 {-| This is the "hello world" of elm-serverless.
@@ -20,7 +21,7 @@ main =
         , interopPorts = Serverless.noPorts
 
         -- Entry point for new connections.
-        , endpoint = respond ( 200, textBody "Hello Elm on AWS Lambda" )
+        , endpoint = respond ( 200, Body.text "Hello Elm on AWS Lambda" )
 
         -- Provides ports to the framework which are used for requests,
         -- and responses. Do not use these ports directly, the framework

@@ -59,11 +59,11 @@ type Msg
 
 
 type alias Conn =
-    Serverless.Conn.Conn Config () Route
+    Serverless.Conn.Conn Config () Route Msg
 
 
 type alias Plug =
-    Serverless.Plug.Plug Config () Route
+    Serverless.Plug.Plug Config () Route Msg
 
 
 port requestPort : Serverless.RequestPort msg

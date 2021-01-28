@@ -3,7 +3,8 @@ port module Interop.API exposing (Conn, Msg(..), Route(..), endpoint, main, requ
 import Json.Decode
 import Json.Encode
 import Serverless
-import Serverless.Conn exposing (jsonBody, respond, route)
+import Serverless.Conn exposing (respond, route)
+import Serverless.Conn.Body as Body
 import Url.Parser exposing ((</>), int, map, oneOf, s, top)
 
 
@@ -54,7 +55,7 @@ update : Msg -> Conn -> ( Conn, Cmd Msg )
 update msg conn =
     case msg of
         RandomFloat val ->
-            respond ( 200, jsonBody <| Json.Encode.float val ) conn
+            respond ( 200, Body.json <| Json.Encode.float val ) conn
 
 
 

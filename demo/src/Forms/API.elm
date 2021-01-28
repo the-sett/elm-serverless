@@ -4,8 +4,9 @@ import Json.Decode exposing (Decoder, decodeValue, errorToString, int, map, stri
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Serverless
-import Serverless.Conn exposing (method, request, respond, textBody)
-import Serverless.Conn.Request exposing (Method(..), asJson, body)
+import Serverless.Conn exposing (method, request, respond)
+import Serverless.Conn.Body as Body
+import Serverless.Conn.Request exposing (Method(..), body)
 
 
 {-| Shows one way to convert a JSON POST body into Elm data
@@ -39,21 +40,21 @@ endpoint conn =
             decodeValue personDecoder val |> Result.mapError errorToString
 
         result =
-            conn |> request |> body |> asJson |> Result.andThen decodeResult
+            conn |> request |> body |> Body.asJson |> Result.andThen decodeResult
     in
     case ( method conn, result ) of
         ( POST, Ok person ) ->
-            respond ( 200, textBody <| Encode.encode 0 (personEncoder person) ) conn
+            respond ( 200, Body.text <| Encode.encode 0 (personEncoder person) ) conn
 
         ( POST, Err err ) ->
             respond
                 ( 400
-                , textBody <| "Could not decode request body. " ++ err
+                , Body.text <| "Could not decode request body. " ++ err
                 )
                 conn
 
         _ ->
-            respond ( 405, textBody "Method not allowed" ) conn
+            respond ( 405, Body.text "Method not allowed" ) conn
 
 
 personDecoder : Decoder Person
@@ -72,7 +73,7 @@ personEncoder person =
 
 
 type alias Conn =
-    Serverless.Conn.Conn () () ()
+    Serverless.Conn.Conn () () () ()
 
 
 port requestPort : Serverless.RequestPort msg
