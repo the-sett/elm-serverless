@@ -17,7 +17,7 @@ main =
         , initialModel = ()
         , requestPort = requestPort
         , responsePort = responsePort
-        , interopPorts = [ ( respondRand, Json.Decode.map RandomFloat Json.Decode.float ) ]
+        , interopPorts = [ respondRand ]
         , parseRoute =
             oneOf
                 [ map Unit (s "unit")
@@ -40,7 +40,15 @@ endpoint : Conn -> ( Conn, Cmd Msg )
 endpoint conn =
     case route conn of
         Unit ->
-            ( conn, Serverless.interop requestRand () conn )
+            Serverless.interop requestRand
+                ()
+                (\val ->
+                    Json.Decode.decodeValue
+                        (Json.Decode.map RandomFloat Json.Decode.float)
+                        val
+                        |> Result.withDefault Error
+                )
+                conn
 
 
 
@@ -49,6 +57,7 @@ endpoint conn =
 
 type Msg
     = RandomFloat Float
+    | Error
 
 
 update : Msg -> Conn -> ( Conn, Cmd Msg )
@@ -57,13 +66,16 @@ update msg conn =
         RandomFloat val ->
             respond ( 200, Body.json <| Json.Encode.float val ) conn
 
+        Error ->
+            respond ( 500, Body.text "Error during interop." ) conn
+
 
 
 -- TYPES
 
 
 type alias Conn =
-    Serverless.Conn.Conn () () Route
+    Serverless.Conn.Conn () () Route Msg
 
 
 port requestPort : Serverless.RequestPort msg

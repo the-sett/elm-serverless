@@ -10,7 +10,8 @@ const app = Elm.Interop.API.init();
 if (app.ports != null && app.ports.requestRand != null) {
   app.ports.requestRand.subscribe(args => {
     const connectionId = args[0];
-    app.ports.respondRand.send([connectionId, Math.random()]);
+    const interopSeq = args[1];
+    app.ports.respondRand.send([connectionId, interopSeq, Math.random()]);
   });
 }
 
