@@ -57,6 +57,7 @@ import Json.Encode exposing (Value)
 import Serverless.Conn.Body as Body exposing (Body)
 import Serverless.Conn.Request as Request exposing (Method, Request)
 import Serverless.Conn.Response as Response exposing (Response, Status, setBody, setStatus)
+import Serverless.Interop
 
 
 {-| A connection with a request and response.
